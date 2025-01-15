@@ -1,0 +1,27 @@
+<!-- /templates/professor_atribuido.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atribuição Bem-Sucedida</title>
+    <style>
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ mensagem }}</h1>
+    <button onclick="window.location.href='/professor/'">Voltar</button>
+</body>
+</html>
+

@@ -1,0 +1,46 @@
+<!-- /templates/core/index.html -->
+<!-- Página inicial do sistema. Serve como ponto de entrada para todas as funcionalidades. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Atribuição de Aulas</title>
+    <style>
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bem-vindo, {{ request.user.first_name }}!</h1>
+    <p>Escolha uma das opções abaixo para continuar:</p>
+    <nav>
+        <ul>
+            <!-- Link para a página do professor -->
+            <li><a href="/professor/">Página do Professor</a></li>
+            
+            <!-- Link para a página do gestor -->
+            <li><a href="/gestor/">Página do Gestor</a></li>
+            
+            <!-- Link para a página coletiva -->
+            <li><a href="/coletiva/">Página Coletiva</a></li>
+        </ul>
+    </nav>
+    
+    <!-- Botão para logout -->
+    <form action="/logout/" method="get" style="margin-top: 20px;">
+        <button type="submit">Sair (Logout)</button>
+    </form>
+</body>
+</html>
+

@@ -1,0 +1,5 @@
+nome;pontuacao_peb;pontuacao_paeb;disciplina_peb;disciplina_paeb;cpf;celular;cargo;id_sede;excluir
+Carlos Pereira;900;850;ingles;matematica;34567890123;(21)999888777;AMBOS;101;nao
+João da Silva;850;;matematica;;12345678901;(11)987654321;PEB;102;nao
+Maria Oliveira;;780;;historia;23456789012;(13)998877665;PAEB;103;nao
+Kim;1200;;portugues;;23456789802;(13)86666666;PEB;101;nao

@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página do Gestor</title>
+    <style>
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button.disabled {
+            background-color: gray;
+            cursor: not-allowed;
+        }
+        button.selected {
+            background-color: green;
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        
+        
+    /* Estilo específico para o botão Licença */
+    #licenca {
+        background-color: #007BFF; /* Azul padrão */
+        color: white !important; /* Força a cor branca */
+        transition: background-color 1s ease, color 0.9s ease;
+    }
+    #licenca.active {
+        background-color: red !important; /* Vermelho quando ativo */
+        color: white !important; /* Garante que a cor branca prevaleça */
+    }
+
+    /* Força a cor branca em estados específicos */
+    #licenca:focus,
+    #licenca:hover,
+    #licenca:active {
+        color: white !important;
+    }      
+        
+    </style>
+</head>
+<body>
+
+<h1>Página do Gestor</h1>
+<p>Use uma das opções abaixo para localizar o professor:</p>
+
+<!-- Formulários de busca -->
+<form method="GET" action="">
+    <label for="cpf">Buscar por CPF:</label>
+    <input type="text" id="cpf" name="cpf" placeholder="Digite o CPF">
+    <button type="submit">Buscar</button>
+</form>
+
+<form method="GET" action="">
+    <label for="classificacao_especifica">Buscar por Classificação Específica:</label>
+    <input type="number" id="classificacao_especifica" name="classificacao_especifica" min="1" max="5000" placeholder="Digite a posição">
+    <input type="radio" id="peb" name="tipo_classificacao" value="PEB" checked>
+    <label for="peb">PEB</label>
+    <input type="radio" id="paeb" name="tipo_classificacao" value="PAEB">
+    <label for="paeb">PAEB</label>
+    <button type="submit">Buscar</button>
+</form>
+
+<form method="GET" action="">
+    <label for="classificacao_geral">Buscar por Classificação Geral:</label>
+    <input type="number" id="classificacao_geral" name="classificacao_geral" min="1" max="5000" placeholder="Digite a posição">
+    <button type="submit">Buscar</button>
+</form>
+
+<!-- Informações do professor selecionado -->
+{% if professor_selecionado %}
+    <h2>Informações do Professor Selecionado</h2>
+    <form method="POST" action="/gestor/atualizar_professor/">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <th>Nome</th>
+                <td><input type="text" name="nome" value="{{ professor_selecionado.nome }}"></td>
+            </tr>
+            <tr>
+                <th>CPF</th>
+                <td><input type="text" name="cpf" value="{{ professor_selecionado.cpf }}" readonly></td>
+            </tr>
+            <tr>
+                <th>Cargo</th>
+                <td>
+                    <select name="cargo">
+                        <option value="PEB" {% if professor_selecionado.cargo == 'PEB' %}selected{% endif %}>PEB</option>
+                        <option value="PAEB" {% if professor_selecionado.cargo == 'PAEB' %}selected{% endif %}>PAEB</option>
+                        <option value="AMBOS" {% if professor_selecionado.cargo == 'AMBOS' %}selected{% endif %}>AMBOS</option>
+                    </select>
+                </td>
+            </tr>
+<tr>
+    <th>Disciplina PEB</th>
+    <td>
+        <select name="disciplina_peb">
+            <option value="" {% if professor_selecionado.disciplina_peb == '' %}selected{% endif %}>None</option>
+            <option value="portugues" {% if professor_selecionado.disciplina_peb == 'portugues' %}selected{% endif %}>Português</option>
+            <option value="matematica" {% if professor_selecionado.disciplina_peb == 'matematica' %}selected{% endif %}>Matemática</option>
+            <option value="ciencias" {% if professor_selecionado.disciplina_peb == 'ciencias' %}selected{% endif %}>Ciências</option>
+            <option value="historia" {% if professor_selecionado.disciplina_peb == 'historia' %}selected{% endif %}>História</option>
+            <option value="geografia" {% if professor_selecionado.disciplina_peb == 'geografia' %}selected{% endif %}>Geografia</option>
+            <option value="arte" {% if professor_selecionado.disciplina_peb == 'arte' %}selected{% endif %}>Arte</option>
+            <option value="ingles" {% if professor_selecionado.disciplina_peb == 'ingles' %}selected{% endif %}>Inglês</option>
+            <option value="educacao_fisica" {% if professor_selecionado.disciplina_peb == 'educacao_fisica' %}selected{% endif %}>Educação Física</option>
+        </select>
+    </td>
+</tr>
+<tr>
+    <th>Disciplina PAEB</th>
+    <td>
+        <select name="disciplina_paeb">
+            <option value="" {% if professor_selecionado.disciplina_paeb == '' %}selected{% endif %}>None</option>
+            <option value="portugues" {% if professor_selecionado.disciplina_paeb == 'portugues' %}selected{% endif %}>Português</option>
+            <option value="matematica" {% if professor_selecionado.disciplina_paeb == 'matematica' %}selected{% endif %}>Matemática</option>
+            <option value="ciencias" {% if professor_selecionado.disciplina_paeb == 'ciencias' %}selected{% endif %}>Ciências</option>
+            <option value="historia" {% if professor_selecionado.disciplina_paeb == 'historia' %}selected{% endif %}>História</option>
+            <option value="geografia" {% if professor_selecionado.disciplina_paeb == 'geografia' %}selected{% endif %}>Geografia</option>
+            <option value="arte" {% if professor_selecionado.disciplina_paeb == 'arte' %}selected{% endif %}>Arte</option>
+            <option value="ingles" {% if professor_selecionado.disciplina_paeb == 'ingles' %}selected{% endif %}>Inglês</option>
+            <option value="educacao_fisica" {% if professor_selecionado.disciplina_paeb == 'educacao_fisica' %}selected{% endif %}>Educação Física</option>
+        </select>
+    </td>
+</tr>
+            <tr>
+                <th>Celular</th>
+                <td><input type="text" name="celular" value="{{ professor_selecionado.celular }}"></td>
+            </tr>
+        </table>
+        <button type="submit">Salvar Alterações</button>
+    </form>
+
+
+<h3>Definir a Disciplina</h3>
+<select id="disciplina-selecionada" onchange="atualizarDisciplina()">
+    <option value="portugues" {% if disciplina_selecionada == 'portugues' %}selected{% endif %}>Português</option>
+    <option value="matematica" {% if disciplina_selecionada == 'matematica' %}selected{% endif %}>Matemática</option>
+    <option value="ciencias" {% if disciplina_selecionada == 'ciencias' %}selected{% endif %}>Ciências</option>
+    <option value="historia" {% if disciplina_selecionada == 'historia' %}selected{% endif %}>História</option>
+    <option value="geografia" {% if disciplina_selecionada == 'geografia' %}selected{% endif %}>Geografia</option>
+    <option value="arte" {% if disciplina_selecionada == 'arte' %}selected{% endif %}>Arte</option>
+    <option value="ingles" {% if disciplina_selecionada == 'ingles' %}selected{% endif %}>Inglês</option>
+    <option value="educacao_fisica" {% if disciplina_selecionada == 'educacao_fisica' %}selected{% endif %}>Educação Física</option>
+</select>
+
+
+
+    <!-- Escolhas do Professor -->
+    <h2>Escolhas do Professor</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Escola</th>
+                <th>Turmas</th>
+                <th>Período</th>
+                <th>Prioridade</th>
+            </tr>
+        </thead>
+        <tbody>
+        
+           <!-- Loop de Escolhas do Professor -->
+{% for escolha in escolhas_detalhadas %}
+<tr>
+    <td>{{ escolha.escola.nome }}</td>
+    
+<td>
+    {% for turma in escolha.turmas_status %}
+  
+        {% for status in turma.disciplinas_status %}
+            <button
+    data-escola-id="{{ escolha.escola.id }}"
+    data-turma="{{ turma.turma }}"
+    data-disciplina="{{ status.disciplina }}"
+    {% if status.atribuida or "substituição" in status.disciplina|lower %}
+        class="disabled" disabled
+    {% else %}
+        onclick="toggleButton(this)"
+    {% endif %}
+>
+    {{ turma.turma }} ({{ status.disciplina }})
+</button>
+
+        {% endfor %}
+    {% endfor %}
+</td>
+
+
+
+    <td>{{ escolha.periodo }}</td>
+    <td>{{ escolha.prioridade }}</td>
+</tr>
+{% endfor %}
+
+
+
+        </tbody>
+    </table>
+
+    <button onclick="salvarAtribuicao()">Salvar Atribuição</button>
+
+    <!-- Aulas Já Atribuídas -->
+    <h2>Aulas Já Atribuídas ao Professor</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Escola</th>
+                <th>Turma</th>
+                <th>Disciplina</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for atribuicao in aulas_atribuidas %}
+                <tr>
+                    <td>{{ atribuicao.escola.nome }}</td>
+                    <td>{{ atribuicao.turma }}</td>
+                    <td>{{ atribuicao.disciplina }}</td>            
+                 <td>
+    			<button onclick="deletarAtribuicao('{{ atribuicao.id }}')">Excluir</button>
+		</td>
+
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Botões Adicionais -->
+    <h3>Funcionalidades Adicionais</h3>
+    <button id="fora-de-campo" onclick="toggleButton(this)">Fora de Campo</button>
+    <button id="em-substituicao" onclick="toggleButton(this)">Aula em Substituição</button>
+<!-- Botão Licença -->
+
+<button id="licenca" onclick="toggleLicenca(this)">Licença</button>
+   
+
+
+{% else %}
+    <p>Nenhum professor selecionado. Use o formulário acima para buscar.</p>
+{% endif %}
+
+<script>
+
+function toggleLicenca(button) {
+        button.classList.toggle("active"); // Alterna a classe 'active'
+        console.log("Botão Licença alternado:", button.classList.contains("active") ? "Ativado" : "Desativado");
+    }
+
+
+
+    function atualizarDisciplina() {
+        const disciplinaSelecionada = document.getElementById('disciplina-selecionada').value;
+        const url = new URL(window.location.href);
+        url.searchParams.set('disciplina', disciplinaSelecionada); // Adiciona a disciplina como parâmetro
+        window.location.href = url.toString(); // Recarrega a página com a nova disciplina
+    }
+    
+    
+// atualiza sozinho
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const selectDisciplina = document.getElementById('disciplina-selecionada');
+        if (selectDisciplina) {
+            selectDisciplina.addEventListener('change', () => {
+                const disciplinaSelecionada = selectDisciplina.value;
+                const url = new URL(window.location.href);
+                url.searchParams.set('disciplina', disciplinaSelecionada); // Adiciona a disciplina como parâmetro
+                window.location.href = url.toString(); // Recarrega a página com a nova disciplina
+            });
+        }
+    });    
+    
+
+
+
+    function deletarAtribuicao(atribuicaoId) {
+        if (confirm("Tem certeza de que deseja excluir esta atribuição?")) {
+            fetch('/gestor/deletar_atribuicao/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'  // Inclui o token CSRF para segurança
+                },
+                body: JSON.stringify({ atribuicao_id: atribuicaoId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.mensagem) {
+                    alert(data.mensagem);
+                    location.reload();  // Recarrega a página para atualizar a tabela
+                } else {
+                    alert(data.erro || 'Erro ao excluir a atribuição.');
+                }
+            })
+            .catch(error => console.error('Erro ao excluir a atribuição:', error));
+        }
+    }
+
+    function abrirForaDeCampo() {
+        alert("Abrindo funcionalidade Fora de Campo...");
+    }
+
+    function abrirAulaSubstituicao() {
+        alert("Abrindo funcionalidade Aula em Substituição...");
+    }
+
+
+
+function toggleButton(button) {
+    button.classList.toggle("selected");
+    console.log("Botão alternado:", button.innerText, "Selecionado:", button.classList.contains("selected"));
+}
+
+
+// Função para botão Fora de Campo
+let isForaDeCampo = false;
+let isEmSubstituicao = false;
+
+function toggleForaDeCampo(button) {
+    isForaDeCampo = !isForaDeCampo;
+    button.style.backgroundColor = isForaDeCampo ? "green" : "#007BFF";
+    button.style.color = isForaDeCampo ? "white" : "black";
+}
+
+function toggleSubstituicao(button) {
+    isEmSubstituicao = !isEmSubstituicao;
+    button.style.backgroundColor = isEmSubstituicao ? "green" : "#007BFF";
+    button.style.color = isEmSubstituicao ? "white" : "black";
+}
+
+
+
+
+
+    console.log("Carregando o script do gestor...");
+    function deletarAtribuicao(atribuicaoId) {
+    const confirmar = confirm("Tem certeza de que deseja excluir esta atribuição?");
+    if (!confirmar) {
+        return; // Não faz nada se o usuário cancelar
+    }
+
+    fetch('/gestor/deletar_atribuicao/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'  // Inclui o CSRF Token para segurança
+        },
+        body: JSON.stringify({ atribuicao_id: atribuicaoId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.mensagem) {
+            alert(data.mensagem); // Mostra mensagem de sucesso
+            location.reload(); // Recarrega a página para atualizar
+        } else {
+            alert(data.erro || 'Erro ao excluir a atribuição.');
+        }
+    })
+    .catch(error => console.error('Erro ao excluir a atribuição:', error));
+}
+
+    
+    
+    
+    
+    
+    
+    
+function salvarAtribuicao() {
+    const professorId = "{{ professor_selecionado.id }}";
+    const disciplina = document.getElementById('disciplina-selecionada').value;
+    const turmasSelecionadas = Array.from(document.querySelectorAll('button.selected')).map(btn => ({
+        turma: btn.getAttribute('data-turma'),
+        escolaId: btn.getAttribute('data-escola-id')
+    }));
+
+    const disciplinaFinal = disciplina;
+
+    if (!professorId || !disciplina || turmasSelecionadas.length === 0) {
+        alert("Certifique-se de selecionar a disciplina e pelo menos uma turma.");
+        return;
+    }
+
+    fetch('/gestor/salvar_atribuicao/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            professor_id: professorId,
+            turmas: turmasSelecionadas,
+            disciplina: disciplinaFinal,
+            fora_de_campo: isForaDeCampo,
+            em_substituicao: isEmSubstituicao
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.mensagem) {
+            alert(data.mensagem);
+            location.reload();
+        } else {
+            alert(data.erro || 'Erro ao salvar atribuição.');
+        }
+    })
+    .catch(error => console.error('Erro ao salvar atribuição:', error));
+}
+
+
+
+
+
+
+    
+    
+function abrirConfirmacao(atribuicaoId) {
+    // Exibe a janela de confirmação personalizada
+    const modal = document.getElementById('confirmacaoModal');
+    modal.style.display = 'block';
+    const confirmarButton = document.getElementById('confirmarExclusao');
+    confirmarButton.onclick = function () {
+        deletarAtribuicao(atribuicaoId);
+        modal.style.display = 'none'; // Fecha o modal após confirmar
+    };
+}
+
+function fecharConfirmacao() {
+    // Fecha a janela de confirmação personalizada
+    const modal = document.getElementById('confirmacaoModal');
+    modal.style.display = 'none';
+}
+
+    
+
+ 
+
+    let isLicenca = false;
+    let turmasAnteriores = [];
+    let atribuidasProfessor = [];
+
+ function toggleLicenca(button) {
+    isLicenca = !isLicenca;
+    button.style.backgroundColor = isLicenca ? "red" : "#007BFF";
+    button.style.color = isLicenca ? "white" : "black";
+
+    if (isLicenca) {
+        // Captura os dados das aulas atribuídas ao professor
+        atribuidasProfessor = Array.from(document.querySelectorAll('.aulas-atribuida')).map(row => ({
+            escolaId: row.getAttribute('data-escola-id'),
+            turma: row.getAttribute('data-turma'),
+            disciplina: row.getAttribute('data-disciplina')
+        }));
+        console.log("Atribuições salvas:", atribuidasProfessor);
+    }
+}
+
+    function salvarAtribuicao() {
+        const professorId = "{{ professor_selecionado.id }}";
+        const disciplina = document.getElementById('disciplina-selecionada').value;
+        const turmasSelecionadas = isLicenca ? [] : Array.from(document.querySelectorAll('button.selected')).map(btn => ({
+            turma: btn.getAttribute('data-turma'),
+            escolaId: btn.getAttribute('data-escola-id')
+        }));
+
+        if (isLicenca && turmasAnteriores.length > 0) {
+            // Reinserir as turmas ao desmarcar licença
+            turmasSelecionadas.push(...turmasAnteriores);
+            turmasAnteriores = [];
+        }
+
+        const disciplinaFinal = disciplina;
+
+        if (!professorId || (!isLicenca && turmasSelecionadas.length === 0)) {
+            alert("Certifique-se de selecionar pelo menos uma turma ou ativar licença.");
+            return;
+        }
+
+        fetch('/gestor/salvar_atribuicao/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                professor_id: professorId,
+                turmas: turmasSelecionadas,
+                disciplina: disciplinaFinal,
+                licenca: isLicenca
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.mensagem) {
+                alert(data.mensagem);
+                location.reload();
+            } else {
+                alert(data.erro || 'Erro ao salvar atribuição.');
+            }
+        })
+        .catch(error => console.error('Erro ao salvar atribuição:', error));
+    }
+    
+    
+ 
+  // MARAVILHOSA função que identifica PEB e PAEB  
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // Seleciona todos os botões de turma com disciplina "None" ou "none"
+        const botoesTurmas = document.querySelectorAll('button[data-disciplina="None"], button[data-disciplina="none"]');
+        let disciplinaPAEB = "{{ professor_selecionado.disciplina_paeb|default:'' }}".trim();
+
+        if (disciplinaPAEB) {
+            botoesTurmas.forEach(botao => {
+                // Atualiza os botões com a disciplina PAEB
+                botao.setAttribute("data-disciplina", disciplinaPAEB);
+                botao.innerHTML = `${botao.getAttribute("data-turma")} (${disciplinaPAEB})`;
+            });
+
+            // Verifica se a disciplina no menu está diferente da PAEB e atualiza
+            const selectDisciplina = document.getElementById('disciplina-selecionada');
+            if (selectDisciplina && selectDisciplina.value !== disciplinaPAEB) {
+                selectDisciplina.value = disciplinaPAEB;
+            }
+        } else {
+            console.warn("Disciplina PAEB não encontrada para o professor.");
+        }
+    });
+
+    function atualizarDisciplina() {
+        const disciplinaSelecionada = document.getElementById('disciplina-selecionada').value;
+        const url = new URL(window.location.href);
+
+        // Verifica se o parâmetro da disciplina já está correto antes de recarregar
+        if (url.searchParams.get('disciplina') !== disciplinaSelecionada) {
+            url.searchParams.set('disciplina', disciplinaSelecionada); // Atualiza o parâmetro
+            window.location.href = url.toString(); // Recarrega a página apenas se necessário
+        }
+    }
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</script>
+
+
+
+
+
+
+
+
+</body>
+</html>
+
+

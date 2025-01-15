@@ -1,0 +1,20 @@
+#  Para ativar o sistema:
+
+source /home/herbert/atribuicao_env/bin/activate
+
+# Subir o servidor
+cd /home/herbert/atribuicao_aulas/
+python manage.py runserver
+
+#Abrir terminal
+python manage.py shell
+
+#Atualizar banco de dados
+python manage.py makemigrations
+python manage.py migrate
+
+
+#Subir a planilha para o banco de dados
+python manage.py import_csv
+
+

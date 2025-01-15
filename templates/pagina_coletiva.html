@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Coletiva</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        .escola {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+        .matutino {
+            background-color: #d9edf7;
+        }
+        .vespertino {
+            background-color: #f7e7d9;
+        }
+        .atribuida {
+            background-color: #d4edda;
+        }
+        .nao-atribuida {
+            background-color: #f8d7da;
+        }
+    </style>
+</head>
+<body>
+    <h1>Página Coletiva</h1>
+    <table>
+        <thead>
+            <tr>
+                <!-- Removido o <th> Escola -->
+                <th>Período</th>
+                <th>Turma</th>
+                <th>Disciplina</th>
+                <th>Professor</th>
+                <th>Pontuação</th>
+                <th>Cargo</th>
+                <th>Gestor Responsável</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for escola in dados_coletivos %}
+                <tr class="escola">
+                    <td colspan="7">{{ escola.nome }} ({{ escola.endereco }})</td>
+                </tr>
+                {% for periodo in escola.periodos %}
+                    {% for turma in periodo.turmas %}
+                        {% for disciplina in turma.disciplinas %}
+                            <tr class="{% if disciplina.professor %}atribuida{% else %}nao-atribuida{% endif %}">
+                                <!-- Removido o <td> correspondente à coluna Escola -->
+                                <td>{{ periodo.nome }}</td>
+                                <td>{{ turma.nome }}</td>
+                                <td>{{ disciplina.nome }}</td>
+                                <td>{{ disciplina.professor|default:"Não atribuída" }}</td>
+                                <td>{{ disciplina.pontuacao|default:"-" }}</td>
+                                <td>{{ disciplina.cargo|default:"-" }}</td>
+                                <td>{{ disciplina.gestor|default:"-" }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endfor %}
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
+

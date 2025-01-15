@@ -1,0 +1,31 @@
+Estou desenvolvendo um projeto em django para um pequeno servidor para que professores possam atribuir aulas, e fazer com que a atribuição de aulas, que é motivo de reclamação entre os professores, se torne algo extremamente transparente e que possa ser acompanhada em tempo real pelo computador e até pelo celular. 
+
+A atribuição funciona da seguinte forma: cada escola tem um número diferente de salas de aula, a que podemos nos referir como 'turma'. Cada 'turma' tem um total de 8 professores, sendo (um de cada): 'português', 'matemática', 'ciências', 'história', 'geografia', 'arte', 'educação_física', 'inglês'. Cada professor tem que atribuir suas aulas para diversas turmas, e por isso, esse professor pode trabalhar em mais do que uma escola. Para não haver conflito o professor mais bem classificado tem a preferência de escolher primeiro e o menos classificado cabe atribuir o que restou.
+
+A ideia é que o professor entre em uma página específica após login, escolha 'escola' com as respectivas 'turmas' de interesse. No dia da atribuição, o gestor chamará por ordem de classificação cada professor (pela 'pontuação_docente') e se das turmas que ele escolheu ninguém escolheu ainda, suas aulas serão atribuídas pelo 'gestor' e aquelas turmas serão retiradas do campo 'turmas_disponiveis' e irá para o campo 'turmas_atribuidas'. Em uma segunda página, é possível que todos os professores acompanhem o processo de atribuição em tempo real. Essa segunda página mostrará todas as 'escolas', debaixo de cada escola 'turmas' e debaixo das turmas a 'disciplina' (que pode ser apenas: 'português', 'matemática', 'ciências', 'história', 'geografia', 'arte', 'educação_física', 'inglês'). Ao lado da 'disciplina' ficará escrito ou "turma disponível" ou "tuma atribuída". O 'gestor' será um usuário com muito mais poder do que o 'professor' e pooderá atribuir aula em qualquer 'escola'>'turma' presente em 'turmas_disponíveis' para qualquer professor, ficando a escolha do professor como uma sugestão ao gestor. Nas escolhas do gestor quando ele digitar o cpf do professor para encontra-lo e atribuir aulas, automaticamente o sistema puxara como opção padrão as aulas sugeridas pelo professor na página que ele (o professor) preencheu, a menos que as turmas escolhidas já não estejam mais disponíveis, então aparecerá em branco e o gesto escolherá manualmente  as turmas para atribuir.
+
+
+Já consegui subir o servidor em minha máquina local.
+
+O projeto está localizado em 
+
+/home/herbert/atribuicao_aulas/
+
+Para esse projeto quero o seguinte: Um banco de dados feito à partir de 2 planilhas csv, inicialmente:
+
+1 -> aulas.csv: contém nome da 'escola', 'endereço', 'turma', 'período' (que pode ser apenas: 'matutino' ou 'vespertino')
+2 -> professores.csv: contém 'nome', 'pontuação_docente', 'disciplina' (que pode ser apenas: 'português', 'matemática', 'ciências', 'história', 'geografia', 'arte', 'educação_física', 'inglês'), 'cpf', 'celular', 'cargo' (pode ser apenas: 'PEB' ou 'PAEB')
+
+Dessa forma, meu banco de dados é alimentado com as aulas disponíveis com o primeiro arquivo (aulas.csv), e cria um usuário para cada professor com o segundo arquivo (professores.csv). A criação do usuário seguirá o seguinte critério:
+-> login: cpf
+-> senha: 123
+Ao criar o usuário, dentro desse usuário ele puxa todas as informações da planilha professores.csv ('nome', 'disciplina', 'cpf', 'celular', 'cargo') de cada professor em específico. Caso haja erros o professor tem permissão de retificar as informações.
+
+Como Front-end do projeto, como mencionado anteriormente (mas detalhando um pouco mais) preciso de 3 páginas web:
+-> Página para o professor expressar seu desejo de atribuição, pessoal para cada login;
+-> Página coletiva onde todos podem ver o processo de atribuição (mas precisa estar logado). Ficará o nome dos 8 professores de cada turma de cada escola, juntamente com o nome do gestor que atribuiu as aulas.
+-> Página para o usuário gestor, onde é confirmada a atribuição.
+
+Como não sei nada de programação, coloque os códigos completos e na primeira linha faça um comentário do endereço do arquivo (por exemplo, "/core/admin.py" e faça explicações detalhadas.
+
+

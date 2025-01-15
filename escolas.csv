@@ -1,0 +1,4 @@
+id_escola;escola;endereco;turmas_matutino;turmas_vespertino;status_matutino;status_vespertino
+101;Escola A;Rua das Flores, 123;6A, 6B, 7A, 7B, 8A, 8B;6C, 7C, 8D;L, L, S, S, L, L;L, L, L
+102;Escola B;Av. Central, 456;6A, 6B, 6C, 7A, 7B;8A, 8B, 8C, 9A;L, S, L, S, S;S, S, L, S
+103;Escola C;Rua Sirana, 678;8A, 8C;8D, 8E;L, L;S, S

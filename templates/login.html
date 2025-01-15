@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    <h2>Login</h2>
+    <form method="post">
+        {% csrf_token %} <!-- Token de segurança obrigatório -->
+        <input type="hidden" name="next" value="/" />  <!-- Redireciona para a página inicial -->
+        <label for="id_username">CPF:</label>
+        <input type="text" name="username" id="id_username" placeholder="Digite seu CPF" required>
+        <br>
+        <label for="id_password">Senha:</label>
+        <input type="password" name="password" id="id_password" placeholder="Digite sua senha" required>
+        <br>
+        <button type="submit">Entrar</button>
+    </form>
+    {% if form.errors %}
+        <p style="color:red;">Login inválido. Verifique o CPF e a senha.</p>
+    {% endif %}
+</body>
+</html>
+
