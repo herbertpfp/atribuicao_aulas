@@ -5,8 +5,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Configurações básicas
 SECRET_KEY = os.getenv('SECRET_KEY', 'chave-secreta-insegura')  # Substitua por uma chave segura
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'atribuicao-aulas.onrender.com').split(',')
+DEBUG = True
+ALLOWED_HOSTS = [
+    'atribuicao-aulas.onrender.com',  # Domínio do Render
+    '127.0.0.1',                      # Localhost para testes locais
+    'localhost',                      # Alias do localhost
+]
 
 # Aplicativos instalados
 INSTALLED_APPS = [
@@ -16,6 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'core',
     # Seus aplicativos
 ]
 
