@@ -12,7 +12,9 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            /* Adicionado para garantir que botões desabilitados não causem conflito com o cursor */
             pointer-events: auto;
+
         }
         button:hover {
             background-color: #0056b3;
@@ -20,6 +22,7 @@
         button.disabled {
             background-color: gray;
             cursor: not-allowed;
+            /* Impedir cliques em botões desabilitados */
             pointer-events: none;
         }
         button.selected {
@@ -38,71 +41,51 @@
             padding: 10px;
             text-align: left;
         }
-        .top-buttons {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 20px;
-        }
-        #licenca {
-            background-color: #007BFF;
-            color: white !important;
-            transition: background-color 1s ease, color 0.9s ease;
-             position: relative; /* Container para o indicador de licença */
-        }
-        #licenca.active {
-            background-color: red !important;
-            color: white !important;
-        }
-        #licenca:focus,
-        #licenca:hover,
-        #licenca:active {
-            color: white !important;
-        }
-        .licenca-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background-color: red;
-            border-radius: 50%;
-            position: absolute;
-            top: 50%;
-            right: 5px;
-            transform: translateY(-50%);
-             pointer-events: none; /* Previne que o indicador receba cliques */
-        }
-         .licenca-indicator.hidden {
-            display: none;
-        }
+        
+    /* Estilo específico para o botão Licença */
+    #licenca {
+        background-color: #007BFF; /* Azul padrão */
+        color: white !important; /* Força a cor branca */
+        transition: background-color 1s ease, color 0.9s ease;
+    }
+    #licenca.active {
+        background-color: red !important; /* Vermelho quando ativo */
+        color: white !important; /* Garante que a cor branca prevaleça */
+    }
+
+    /* Força a cor branca em estados específicos */
+    #licenca:focus,
+    #licenca:hover,
+    #licenca:active {
+        color: white !important;
+    }      
     </style>
 </head>
 <body>
-<div class="top-buttons">
-    <button onclick="window.location.href='/home'">Home</button>
-    <button onclick="window.location.href='/logout'">Logout</button>
-</div>
+
 <h1>Página do Gestor</h1>
 <p>Use uma das opções abaixo para localizar o professor:</p>
 
 <!-- Formulários de busca -->
 <form method="GET" action="">
     <label for="cpf">Buscar por CPF:</label>
-    <input type="text" id="cpf" name="cpf" placeholder="Digite o CPF" value="{{ request.GET.cpf }}">
+    <input type="text" id="cpf" name="cpf" placeholder="Digite o CPF">
     <button type="submit">Buscar</button>
 </form>
 
 <form method="GET" action="">
     <label for="classificacao_especifica">Buscar por Classificação Específica:</label>
-    <input type="number" id="classificacao_especifica" name="classificacao_especifica" min="1" max="5000" placeholder="Digite a posição" value="{{ request.GET.classificacao_especifica }}">
-    <input type="radio" id="peb" name="tipo_classificacao" value="PEB" {% if request.GET.tipo_classificacao == 'PEB' or not request.GET.tipo_classificacao %}checked{% endif %}>
+    <input type="number" id="classificacao_especifica" name="classificacao_especifica" min="1" max="5000" placeholder="Digite a posição">
+    <input type="radio" id="peb" name="tipo_classificacao" value="PEB" checked>
     <label for="peb">PEB</label>
-    <input type="radio" id="paeb" name="tipo_classificacao" value="PAEB" {% if request.GET.tipo_classificacao == 'PAEB' %}checked{% endif %}>
+    <input type="radio" id="paeb" name="tipo_classificacao" value="PAEB">
     <label for="paeb">PAEB</label>
     <button type="submit">Buscar</button>
 </form>
 
 <form method="GET" action="">
     <label for="classificacao_geral">Buscar por Classificação Geral:</label>
-    <input type="number" id="classificacao_geral" name="classificacao_geral" min="1" max="5000" placeholder="Digite a posição"  value="{{ request.GET.classificacao_geral }}">
+    <input type="number" id="classificacao_geral" name="classificacao_geral" min="1" max="5000" placeholder="Digite a posição">
     <button type="submit">Buscar</button>
 </form>
 
@@ -170,6 +153,7 @@
         <button type="submit">Salvar Alterações</button>
     </form>
 
+
     <h3>Definir a Disciplina</h3>
     <select id="disciplina-selecionada" onchange="atualizarDisciplina()">
         <option value="portugues" {% if disciplina_selecionada == 'portugues' %}selected{% endif %}>Português</option>
@@ -231,7 +215,8 @@
 
         <button onclick="salvarAtribuicao()">Salvar Atribuição</button>
 
-   <h2>Aulas Já Atribuídas ao Professor</h2>
+    <!-- Aulas Já Atribuídas -->
+    <h2>Aulas Já Atribuídas ao Professor</h2>
     <table>
         <thead>
             <tr>

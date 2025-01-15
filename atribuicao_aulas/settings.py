@@ -5,12 +5,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Configurações básicas
 SECRET_KEY = os.getenv('SECRET_KEY', 'chave-secreta-insegura')  # Substitua por uma chave segura
-DEBUG = True
-ALLOWED_HOSTS = [
-    'atribuicao-aulas.onrender.com',  # Domínio do Render
-    '127.0.0.1',                      # Localhost para testes locais
-    'localhost',                      # Alias do localhost
-]
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'atribuicao-aulas.onrender.com,127.0.0.1,localhost').split(',')
 
 # Aplicativos instalados
 INSTALLED_APPS = [
@@ -65,20 +61,25 @@ DATABASES = {
 }
 
 # Configuração de Senhas
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+#AUTH_PASSWORD_VALIDATORS = [
+#    {
+#       'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+#    },
+#    {
+#        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+#    },
+#    {
+#        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+#    },
+#    {
+#        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+#    },
+#]
+
+
+
+#DESBLOQUEAR SENHA 123
+AUTH_PASSWORD_VALIDATORS = []
 
 # Internacionalização
 LANGUAGE_CODE = 'pt-br'
@@ -109,8 +110,8 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'sua-senha')
 # Configuração de Segurança
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = os.getenv('SESSION_COOKIE_SECURE', 'False') == 'True'
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'False') == 'True'
 X_FRAME_OPTIONS = 'DENY'
 
 # Configuração Padrão

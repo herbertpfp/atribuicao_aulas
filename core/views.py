@@ -158,29 +158,141 @@ def index(request):
 from django.shortcuts import render, redirect
 from django.http import HttpResponseForbidden
 
+
+
+
+
+
+
+def calcular_classificacao():
+    # Obter professores
+    professores_peb = Professor.objects.filter(pontuacao_peb__gt=0).order_by('-pontuacao_peb', 'cpf')
+    professores_paeb = Professor.objects.filter(pontuacao_paeb__gt=0).order_by('-pontuacao_paeb', 'cpf')
+    professores_zero = Professor.objects.filter(pontuacao_peb=0, pontuacao_paeb=0).order_by('nome', 'cpf')
+
+    # Criar lista para classificação geral
+    ranking_geral = []
+
+    # Adicionar professores PEB (pontuação > 0)
+    for professor in professores_peb:
+        ranking_geral.append({
+            "id": professor.id,
+            "nome": professor.nome,
+            "cargo": "PEB",
+            "pontuacao": professor.pontuacao_peb,
+            "cpf": professor.cpf,
+            "disciplina": professor.disciplina_peb,  # Disciplina associada ao cargo PEB
+        })
+
+    # Adicionar professores PAEB (pontuação > 0)
+    for professor in professores_paeb:
+        ranking_geral.append({
+            "id": professor.id,
+            "nome": professor.nome,
+            "cargo": "PAEB",
+            "pontuacao": professor.pontuacao_paeb,
+            "cpf": professor.cpf,
+            "disciplina": professor.disciplina_paeb,  # Disciplina associada ao cargo PAEB
+        })
+
+    # Adicionar professores com pontuação zero (ordem alfabética)
+    for professor in professores_zero:
+        ranking_geral.append({
+            "id": professor.id,
+            "nome": professor.nome,
+            "cargo": "ZERADO",
+            "pontuacao": 0,
+            "cpf": professor.cpf,
+            "disciplina": None,  # Sem disciplina associada
+        })
+
+    # Reorganizar pelo critério (PEB > PAEB > ZERADO, com CPF como desempate)
+    ranking_geral = sorted(ranking_geral, key=lambda x: (
+        x["cargo"] == "ZERADO",  # ZERADO vai para o final
+        x["cargo"] == "PAEB",    # PAEB depois de PEB
+        -x["pontuacao"],         # Pontuação decrescente
+        x["cpf"]                 # Desempate por CPF
+    ))
+
+    # Adicionar posições
+    ranking_geral_com_posicao = {idx + 1: prof for idx, prof in enumerate(ranking_geral)}
+
+    return ranking_geral_com_posicao
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @login_required
 def pagina_gestor(request):
+    # Verifica se o usuário tem permissão para acessar a página
     if not (request.user.groups.filter(name='Gestor').exists() or request.user.username == 'seu_usuario_dono'):
         return HttpResponseForbidden("Acesso negado. Você não tem permissão para acessar esta página.")
 
+    # Obter todos os professores e escolas
     professores = Professor.objects.all()
     escolas = Escola.objects.all()
-    professor_selecionado = None  # Inicializa a variável como None
+    professor_selecionado = None
     disciplina_selecionada = None
     escolhas_detalhadas = []
     aulas_atribuidas = []
     mensagem_erro = None
 
     # Calcular os rankings
-    professores_peb = Professor.objects.filter(cargo__in=['PEB', 'AMBOS']).order_by('-pontuacao_peb', 'cpf')
-    professores_paeb = Professor.objects.filter(cargo__in=['PAEB', 'AMBOS']).order_by('-pontuacao_paeb', 'cpf')
-    ranking_especifico_peb = {professor.id: idx + 1 for idx, professor in enumerate(professores_peb)}
-    ranking_especifico_paeb = {professor.id: idx + 1 for idx, professor in enumerate(professores_paeb)}
-    professores_geral = sorted(
-        list(professores_peb) + list(professores_paeb),
-        key=lambda prof: (-prof.pontuacao_peb if prof.cargo in ['PEB', 'AMBOS'] else -prof.pontuacao_paeb, prof.cpf)
-    )
-    ranking_geral = {professor.id: idx + 1 for idx, professor in enumerate(professores_geral)}
+    professores_peb = Professor.objects.filter(cargo__in=['PEB', 'AMBOS'], pontuacao_peb__gt=0).order_by('-pontuacao_peb', 'cpf')
+    professores_paeb = Professor.objects.filter(cargo__in=['PAEB', 'AMBOS'], pontuacao_paeb__gt=0).order_by('-pontuacao_paeb', 'cpf')
+    professores_zerados = Professor.objects.filter(pontuacao_peb=0, pontuacao_paeb=0).order_by('nome', 'cpf')
+
+    # Combinar os rankings em uma lista geral
+    ranking_geral = []
+    for professor in professores_peb:
+        ranking_geral.append({
+            "id": professor.id,
+            "nome": professor.nome,
+            "cargo": "PEB",
+            "pontuacao": professor.pontuacao_peb,
+            "disciplina": professor.disciplina_peb,
+            "cpf": professor.cpf,
+        })
+    for professor in professores_paeb:
+        ranking_geral.append({
+            "id": professor.id,
+            "nome": professor.nome,
+            "cargo": "PAEB",
+            "pontuacao": professor.pontuacao_paeb,
+            "disciplina": professor.disciplina_paeb,
+            "cpf": professor.cpf,
+        })
+    for professor in professores_zerados:
+        ranking_geral.append({
+            "id": professor.id,
+            "nome": professor.nome,
+            "cargo": "ZERADO",
+            "pontuacao": 0,
+            "disciplina": None,
+            "cpf": professor.cpf,
+        })
+
+    # Ordenar a lista geral
+    ranking_geral = sorted(ranking_geral, key=lambda x: (
+        x["cargo"] == "ZERADO",  # Professores zerados por último
+        x["cargo"] == "PAEB",    # PAEB depois de PEB
+        -x["pontuacao"],         # Pontuação decrescente
+        x["cpf"]                 # CPF para desempate
+    ))
 
     # Buscar professor por CPF ou classificação
     cpf = request.GET.get('cpf')
@@ -191,28 +303,29 @@ def pagina_gestor(request):
     if cpf:
         try:
             professor_selecionado = Professor.objects.get(cpf=cpf)
-            disciplina_selecionada = professor_selecionado.disciplina_peb
+            disciplina_selecionada = professor_selecionado.disciplina_peb or professor_selecionado.disciplina_paeb
         except Professor.DoesNotExist:
             mensagem_erro = f"Nenhum professor encontrado com o CPF {cpf}."
+
     elif classificacao_especifica:
         classificacao_especifica = int(classificacao_especifica)
         try:
-            professor_id = None
-            if tipo_classificacao == 'PEB':
-                professor_id = next((id_ for id_, rank in ranking_especifico_peb.items() if rank == classificacao_especifica), None)
-            elif tipo_classificacao == 'PAEB':
-                professor_id = next((id_ for id_, rank in ranking_especifico_paeb.items() if rank == classificacao_especifica), None)
+            ranking = ranking_geral if tipo_classificacao == 'GERAL' else (
+                ranking_especifico_peb if tipo_classificacao == 'PEB' else ranking_especifico_paeb
+            )
+            professor_id = next((prof["id"] for idx, prof in enumerate(ranking) if idx + 1 == classificacao_especifica), None)
             professor_selecionado = Professor.objects.get(id=professor_id)
-            disciplina_selecionada = professor_selecionado.disciplina_peb
+            disciplina_selecionada = professor_selecionado.disciplina_peb if tipo_classificacao == 'PEB' else professor_selecionado.disciplina_paeb
         except (StopIteration, Professor.DoesNotExist):
             mensagem_erro = f"Nenhum professor encontrado para a classificação {classificacao_especifica} ({tipo_classificacao})."
+
     elif classificacao_geral:
         classificacao_geral = int(classificacao_geral)
         try:
-            professor_id = next((id_ for id_, rank in ranking_geral.items() if rank == classificacao_geral), None)
+            professor_id = ranking_geral[classificacao_geral - 1]["id"]
             professor_selecionado = Professor.objects.get(id=professor_id)
-            disciplina_selecionada = professor_selecionado.disciplina_peb
-        except (StopIteration, Professor.DoesNotExist):
+            disciplina_selecionada = professor_selecionado.disciplina_peb or professor_selecionado.disciplina_paeb
+        except IndexError:
             mensagem_erro = f"Nenhum professor encontrado para a classificação geral {classificacao_geral}."
 
     # Verifica se o menu de disciplina foi alterado
@@ -226,24 +339,18 @@ def pagina_gestor(request):
         for escolha in escolhas_professor:
             turmas_lista = escolha.turmas.split(",") if escolha.turmas else []
             status_turmas = []
-
             for turma in turmas_lista:
                 atribuicoes_turma = Atribuicao.objects.filter(escola=escolha.escola, turma=turma.strip())
-                            
-                
-                
-                disciplinas_atribuidas = [
-                    atribuicao.disciplina.split(" (Fora de Campo)")[0].split(" (Substituição)")[0].strip()
-                    for atribuicao in atribuicoes_turma
-]
-                
-                   
+                disciplinas_atribuidas = [atribuicao.disciplina for atribuicao in atribuicoes_turma]
 
+                # Cria status para todas as disciplinas possíveis do professor
                 status_disciplinas = [
                     {
-                        "disciplina": disciplina_selecionada,
-                        "atribuida": disciplina_selecionada in disciplinas_atribuidas
+                        "disciplina": disciplina,
+                        "atribuida": disciplina in disciplinas_atribuidas
                     }
+                    for disciplina in [professor_selecionado.disciplina_peb, professor_selecionado.disciplina_paeb]
+                    if disciplina
                 ]
 
                 status_turmas.append({
@@ -260,6 +367,7 @@ def pagina_gestor(request):
 
         aulas_atribuidas = Atribuicao.objects.filter(professor=professor_selecionado).select_related('escola')
 
+    # Renderizar a página do gestor
     return render(request, 'pagina_gestor.html', {
         'professores': professores,
         'escolas': escolas,
@@ -267,11 +375,10 @@ def pagina_gestor(request):
         'disciplina_selecionada': disciplina_selecionada,
         'escolhas_detalhadas': escolhas_detalhadas,
         'aulas_atribuidas': aulas_atribuidas,
-        'ranking_peb': ranking_especifico_peb,
-        'ranking_paeb': ranking_especifico_paeb,
         'ranking_geral': ranking_geral,
         'mensagem_erro': mensagem_erro,
     })
+
 
 
 
@@ -536,8 +643,8 @@ def atribuir_professor(request):
                         defaults={
                             "turmas": ",".join(turmas_selecionadas),
                             "prioridade": int(dados["prioridade"]),
-                         #   "disciplina_peb": professor.disciplina_peb,
-			  #  "disciplina_paeb": professor.disciplina_paeb,
+                            "disciplina_peb": professor.disciplina_peb,
+			  "disciplina_paeb": professor.disciplina_paeb,
 			"disciplina_peb": professor.disciplina_peb,
                         "disciplina_paeb": professor.disciplina_paeb,
                             "periodo": "Matutino e Vespertino" if dados["matutino"] and dados["vespertino"] else
