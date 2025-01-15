@@ -8,7 +8,7 @@ from .views import atribuir_professor
 
 
 urlpatterns = [
-    path('', views.index, name='index'),  # Página inicial do sistema
+    path('', views.index, name='index'),  # Rota para a página inicial
     path('professor/', views.pagina_professor, name='pagina_professor'),  # Página do professor
     path('gestor/', views.pagina_gestor, name='pagina_gestor'),  # Página do gestor
     path('coletiva/', views.pagina_coletiva, name='pagina_coletiva'),  # Página coletiva
