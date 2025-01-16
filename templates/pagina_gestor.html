@@ -12,7 +12,9 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            /* Adicionado para garantir que botões desabilitados não causem conflito com o cursor */
             pointer-events: auto;
+
         }
         button:hover {
             background-color: #0056b3;
@@ -20,6 +22,7 @@
         button.disabled {
             background-color: gray;
             cursor: not-allowed;
+            /* Impedir cliques em botões desabilitados */
             pointer-events: none;
         }
         button.selected {
@@ -38,11 +41,8 @@
             padding: 10px;
             text-align: left;
         }
-        .top-buttons {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 20px;
-        }
+        
+    /* Estilo específico para o botão Licença */
         #licenca {
             background-color: #007BFF;
             color: white !important;
@@ -73,36 +73,37 @@
          .licenca-indicator.hidden {
             display: none;
         }
+    }      
     </style>
 </head>
 <body>
-<div class="top-buttons">
-    <button onclick="window.location.href='/home'">Home</button>
-    <button onclick="window.location.href='/logout'">Logout</button>
-</div>
+    <button onclick="window.location.href='/'" style="float: right; margin: 10px;">Voltar para Home</button>
+    <button onclick="window.location.href='/logout/'" style="float: right; margin: 10px;">Logout</button>
+  
+
 <h1>Página do Gestor</h1>
 <p>Use uma das opções abaixo para localizar o professor:</p>
 
 <!-- Formulários de busca -->
 <form method="GET" action="">
     <label for="cpf">Buscar por CPF:</label>
-    <input type="text" id="cpf" name="cpf" placeholder="Digite o CPF" value="{{ request.GET.cpf }}">
+    <input type="text" id="cpf" name="cpf" placeholder="Digite o CPF">
     <button type="submit">Buscar</button>
 </form>
 
 <form method="GET" action="">
     <label for="classificacao_especifica">Buscar por Classificação Específica:</label>
-    <input type="number" id="classificacao_especifica" name="classificacao_especifica" min="1" max="5000" placeholder="Digite a posição" value="{{ request.GET.classificacao_especifica }}">
-    <input type="radio" id="peb" name="tipo_classificacao" value="PEB" {% if request.GET.tipo_classificacao == 'PEB' or not request.GET.tipo_classificacao %}checked{% endif %}>
+    <input type="number" id="classificacao_especifica" name="classificacao_especifica" min="1" max="5000" placeholder="Digite a posição">
+    <input type="radio" id="peb" name="tipo_classificacao" value="PEB" checked>
     <label for="peb">PEB</label>
-    <input type="radio" id="paeb" name="tipo_classificacao" value="PAEB" {% if request.GET.tipo_classificacao == 'PAEB' %}checked{% endif %}>
+    <input type="radio" id="paeb" name="tipo_classificacao" value="PAEB">
     <label for="paeb">PAEB</label>
     <button type="submit">Buscar</button>
 </form>
 
 <form method="GET" action="">
     <label for="classificacao_geral">Buscar por Classificação Geral:</label>
-    <input type="number" id="classificacao_geral" name="classificacao_geral" min="1" max="5000" placeholder="Digite a posição"  value="{{ request.GET.classificacao_geral }}">
+    <input type="number" id="classificacao_geral" name="classificacao_geral" min="1" max="5000" placeholder="Digite a posição">
     <button type="submit">Buscar</button>
 </form>
 
@@ -167,20 +168,62 @@
                 <td><input type="text" name="celular" value="{{ professor_selecionado.celular }}"></td>
             </tr>
         </table>
+        
+        
+        
         <button type="submit">Salvar Alterações</button>
     </form>
 
-    <h3>Definir a Disciplina</h3>
-    <select id="disciplina-selecionada" onchange="atualizarDisciplina()">
-        <option value="portugues" {% if disciplina_selecionada == 'portugues' %}selected{% endif %}>Português</option>
-        <option value="matematica" {% if disciplina_selecionada == 'matematica' %}selected{% endif %}>Matemática</option>
-        <option value="ciencias" {% if disciplina_selecionada == 'ciencias' %}selected{% endif %}>Ciências</option>
-        <option value="historia" {% if disciplina_selecionada == 'historia' %}selected{% endif %}>História</option>
-        <option value="geografia" {% if disciplina_selecionada == 'geografia' %}selected{% endif %}>Geografia</option>
-        <option value="arte" {% if disciplina_selecionada == 'arte' %}selected{% endif %}>Arte</option>
-        <option value="ingles" {% if disciplina_selecionada == 'ingles' %}selected{% endif %}>Inglês</option>
-        <option value="educacao_fisica" {% if disciplina_selecionada == 'educacao_fisica' %}selected{% endif %}>Educação Física</option>
-    </select>
+
+
+
+
+
+
+
+
+
+
+
+<h3>Definir a Disciplina</h3>
+<select id="disciplina-selecionada" onchange="atualizarDisciplina()">
+    <option value="portugues" {% if disciplina_selecionada == 'portugues' %}selected{% endif %}>Português</option>
+    <option value="matematica" {% if disciplina_selecionada == 'matematica' %}selected{% endif %}>Matemática</option>
+    <option value="ciencias" {% if disciplina_selecionada == 'ciencias' %}selected{% endif %}>Ciências</option>
+    <option value="historia" {% if disciplina_selecionada == 'historia' %}selected{% endif %}>História</option>
+    <option value="geografia" {% if disciplina_selecionada == 'geografia' %}selected{% endif %}>Geografia</option>
+    <option value="arte" {% if disciplina_selecionada == 'arte' %}selected{% endif %}>Arte</option>
+    <option value="ingles" {% if disciplina_selecionada == 'ingles' %}selected{% endif %}>Inglês</option>
+    <option value="educacao_fisica" {% if disciplina_selecionada == 'educacao_fisica' %}selected{% endif %}>Educação Física</option>
+</select>
+
+
+<script>
+    function atualizarDisciplina() {
+        const disciplinaSelecionada = document.getElementById('disciplina-selecionada').value;
+        const url = new URL(window.location.href);
+        url.searchParams.set('disciplina', disciplinaSelecionada); // Adiciona a disciplina como parâmetro
+        window.location.href = url.toString(); // Recarrega a página com a nova disciplina
+    }
+    
+    
+// atualiza sozinho
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const selectDisciplina = document.getElementById('disciplina-selecionada');
+        if (selectDisciplina) {
+            selectDisciplina.addEventListener('change', () => {
+                const disciplinaSelecionada = selectDisciplina.value;
+                const url = new URL(window.location.href);
+                url.searchParams.set('disciplina', disciplinaSelecionada); // Adiciona a disciplina como parâmetro
+                window.location.href = url.toString(); // Recarrega a página com a nova disciplina
+            });
+        }
+    });    
+    
+</script>
+
+
 
     <!-- Escolhas do Professor -->
     <h2>Escolhas do Professor</h2>
@@ -196,42 +239,53 @@
         <tbody>
         
            <!-- Loop de Escolhas do Professor -->
-            {% for escolha in escolhas_detalhadas %}
-            <tr>
-                <td>{{ escolha.escola.nome }}</td>
-                
-            <td>
-                {% for turma in escolha.turmas_status %}
-                
-                    {% for status in turma.disciplinas_status %}
-                    
-                        <button
-                            data-escola-id="{{ escolha.escola.id }}"
-                            data-turma="{{ turma.turma }}"
-                            data-disciplina="{{ status.disciplina }}"
-                            {% if not status.atribuida and "substituição" not in status.disciplina|lower %}
-                                onclick="toggleButton(this)"
-                            {% else %}
-                                class="disabled" disabled
-                            {% endif %}
-                        >
-                            {{ turma.turma }} ({{ status.disciplina }})
-                        </button>
-                    {% endfor %}
-                {% endfor %}
-            </td>
-            
-                <td>{{ escolha.periodo }}</td>
-                <td>{{ escolha.prioridade }}</td>
-            </tr>
-            {% endfor %}
+{% for escolha in escolhas_detalhadas %}
+<tr>
+    <td>{{ escolha.escola.nome }}</td>
+    
+<td>
+    {% for turma in escolha.turmas_status %}
+  
+        {% for status in turma.disciplinas_status %}
+            <button
+    data-escola-id="{{ escolha.escola.id }}"
+    data-turma="{{ turma.turma }}"
+    data-disciplina="{{ status.disciplina }}"
+    {% if status.atribuida or "substituição" in status.disciplina|lower %}
+        class="disabled" disabled
+    {% else %}
+        onclick="toggleButton(this)"
+    {% endif %}
+>
+    {{ turma.turma }} ({{ status.disciplina }})
+</button>
+
+        {% endfor %}
+    {% endfor %}
+</td>
+
+
+
+
+
+
+
+
+
+    <td>{{ escolha.periodo }}</td>
+    <td>{{ escolha.prioridade }}</td>
+</tr>
+{% endfor %}
+
+
 
         </tbody>
     </table>
 
-        <button onclick="salvarAtribuicao()">Salvar Atribuição</button>
+    <button onclick="salvarAtribuicao()">Salvar Atribuição</button>
 
-   <h2>Aulas Já Atribuídas ao Professor</h2>
+    <!-- Aulas Já Atribuídas -->
+    <h2>Aulas Já Atribuídas ao Professor</h2>
     <table>
         <thead>
             <tr>
@@ -243,16 +297,14 @@
         </thead>
         <tbody>
             {% for atribuicao in aulas_atribuidas %}
-                <tr class="aulas-atribuida"
-                    data-escola-id="{{ atribuicao.escola.id }}"
-                    data-turma="{{ atribuicao.turma }}"
-                    data-disciplina="{{ atribuicao.disciplina }}">
+                <tr>
                     <td>{{ atribuicao.escola.nome }}</td>
                     <td>{{ atribuicao.turma }}</td>
                     <td>{{ atribuicao.disciplina }}</td>            
-                    <td>
-                        <button onclick="deletarAtribuicao('{{ atribuicao.id }}')">Excluir</button>
-                    </td>
+                 <td>
+    			<button onclick="deletarAtribuicao('{{ atribuicao.id }}')">Excluir</button>
+		</td>
+
                 </tr>
             {% endfor %}
         </tbody>
@@ -260,21 +312,19 @@
 
     <!-- Botões Adicionais -->
     <h3>Funcionalidades Adicionais</h3>
-    <button id="fora-de-campo" onclick="toggleButton(this)">Fora de Campo</button>
-    <button id="em-substituicao" onclick="toggleButton(this)">Aula em Substituição</button>
+    <button id="fora-de-campo" onclick="toggleForaDeCampo(this)">Fora de Campo</button>
+    <button id="em-substituicao" onclick="toggleSubstituicao(this)">Aula em Substituição</button>
     <!-- Botão Licença -->
     <button id="licenca" onclick="toggleLicenca(this)">Licença</button>
-   
+
 {% else %}
     <p>Nenhum professor selecionado. Use o formulário acima para buscar.</p>
 {% endif %}
 
 <script>
-    // Adicionado para evitar conflitos com funções com o mesmo nome
-    // que podem ser definidas em outros arquivos JS.
-
-    const gestorModule = (function() {
-
+//    function toggleButton(button) {
+//        button.classList.toggle("selected");
+//    }
 
 //BOTÃO LICENÇA
         function toggleLicenca(button) {
@@ -331,267 +381,215 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
-
-
-        
-        function atualizarDisciplina() {
-            const disciplinaSelecionada = document.getElementById('disciplina-selecionada').value;
-            const url = new URL(window.location.href);
-            url.searchParams.set('disciplina', disciplinaSelecionada); // Adiciona a disciplina como parâmetro
-            window.location.href = url.toString(); // Recarrega a página com a nova disciplina
-        }
-            
-        // atualiza sozinho
-        document.addEventListener('DOMContentLoaded', () => {
-            const selectDisciplina = document.getElementById('disciplina-selecionada');
-            if (selectDisciplina) {
-                selectDisciplina.addEventListener('change', () => {
-                    const disciplinaSelecionada = selectDisciplina.value;
-                    const url = new URL(window.location.href);
-                    url.searchParams.set('disciplina', disciplinaSelecionada); // Adiciona a disciplina como parâmetro
-                    window.location.href = url.toString(); // Recarrega a página com a nova disciplina
-                });
-            }
-        });
-        
-        function deletarAtribuicao(atribuicaoId) {
-            if (confirm("Tem certeza de que deseja excluir esta atribuição?")) {
-                fetch('/gestor/deletar_atribuicao/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': '{{ csrf_token }}'  // Inclui o token CSRF para segurança
-                    },
-                    body: JSON.stringify({ atribuicao_id: atribuicaoId })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.mensagem) {
-                        alert(data.mensagem);
-                        location.reload();  // Recarrega a página para atualizar a tabela
-                    } else {
-                        alert(data.erro || 'Erro ao excluir a atribuição.');
-                    }
-                })
-                .catch(error => console.error('Erro ao excluir a atribuição:', error));
-            }
-        }
-
-        function abrirForaDeCampo() {
-            alert("Abrindo funcionalidade Fora de Campo...");
-        }
-
-        function abrirAulaSubstituicao() {
-            alert("Abrindo funcionalidade Aula em Substituição...");
-        }
-
-        function toggleButton(button) {
-            console.log("Botão clicado:", button);
-            button.classList.toggle("selected");
-            console.log("Estado do botão:", button.classList.contains("selected") ? "Selecionado" : "Não selecionado");
-        }
-
-
-        // Função para botão Fora de Campo
-        let isForaDeCampo = false;
-        let isEmSubstituicao = false;
-
-        function toggleForaDeCampo(button) {
-            isForaDeCampo = !isForaDeCampo;
-            button.style.backgroundColor = isForaDeCampo ? "green" : "#007BFF";
-            button.style.color = isForaDeCampo ? "white" : "black";
-        }
-
-        function toggleSubstituicao(button) {
-            isEmSubstituicao = !isEmSubstituicao;
-            button.style.backgroundColor = isEmSubstituicao ? "green" : "#007BFF";
-            button.style.color = isEmSubstituicao ? "white" : "black";
-        }
-
-        console.log("Carregando o script do gestor...");
-        
-        function deletarAtribuicao(atribuicaoId) {
-            const confirmar = confirm("Tem certeza de que deseja excluir esta atribuição?");
-            if (!confirmar) {
-                return; // Não faz nada se o usuário cancelar
-            }
-
+    function deletarAtribuicao(atribuicaoId) {
+        if (confirm("Tem certeza de que deseja excluir esta atribuição?")) {
             fetch('/gestor/deletar_atribuicao/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'  // Inclui o CSRF Token para segurança
+                    'X-CSRFToken': '{{ csrf_token }}'  // Inclui o token CSRF para segurança
                 },
                 body: JSON.stringify({ atribuicao_id: atribuicaoId })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.mensagem) {
-                    alert(data.mensagem); // Mostra mensagem de sucesso
-                    location.reload(); // Recarrega a página para atualizar
+                    alert(data.mensagem);
+                    location.reload();  // Recarrega a página para atualizar a tabela
                 } else {
                     alert(data.erro || 'Erro ao excluir a atribuição.');
                 }
             })
             .catch(error => console.error('Erro ao excluir a atribuição:', error));
         }
+    }
+
+    function abrirForaDeCampo() {
+        alert("Abrindo funcionalidade Fora de Campo...");
+    }
+
+    function abrirAulaSubstituicao() {
+        alert("Abrindo funcionalidade Aula em Substituição...");
+    }
+
+
+
+function toggleButton(button) {
+    button.classList.toggle("selected");
+    console.log("Botão alternado:", button.innerText, "Selecionado:", button.classList.contains("selected"));
+}
+
+
+// Função para botão Fora de Campo
+let isForaDeCampo = false;
+let isEmSubstituicao = false;
+
+function toggleForaDeCampo(button) {
+    isForaDeCampo = !isForaDeCampo;
+    button.style.backgroundColor = isForaDeCampo ? "green" : "#007BFF";
+    button.style.color = isForaDeCampo ? "white" : "black";
+}
+
+function toggleSubstituicao(button) {
+    isEmSubstituicao = !isEmSubstituicao;
+    button.style.backgroundColor = isEmSubstituicao ? "green" : "#007BFF";
+    button.style.color = isEmSubstituicao ? "white" : "black";
+}
+
+
+
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+<p>Professor ID: {{ professor_selecionado.id }}</p>
+
+
+
+<script>
+    console.log("Carregando o script do gestor...");
+    function deletarAtribuicao(atribuicaoId) {
+    const confirmar = confirm("Tem certeza de que deseja excluir esta atribuição?");
+    if (!confirmar) {
+        return; // Não faz nada se o usuário cancelar
+    }
+
+    fetch('/gestor/deletar_atribuicao/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'  // Inclui o CSRF Token para segurança
+        },
+        body: JSON.stringify({ atribuicao_id: atribuicaoId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.mensagem) {
+            alert(data.mensagem); // Mostra mensagem de sucesso
+            location.reload(); // Recarrega a página para atualizar
+        } else {
+            alert(data.erro || 'Erro ao excluir a atribuição.');
+        }
+    })
+    .catch(error => console.error('Erro ao excluir a atribuição:', error));
+}
+
     
-        function salvarAtribuicao() {
-            const professorId = "{{ professor_selecionado.id }}";
-            const disciplina = document.getElementById('disciplina-selecionada').value;
-            const turmasSelecionadas = Array.from(document.querySelectorAll('button.selected')).map(btn => ({
-                turma: btn.getAttribute('data-turma'),
-                escolaId: btn.getAttribute('data-escola-id')
-            }));
-
-            const disciplinaFinal = disciplina;
-
-            if (!professorId || !disciplina || turmasSelecionadas.length === 0) {
-                alert("Certifique-se de selecionar a disciplina e pelo menos uma turma.");
-                return;
-            }
-
-            fetch('/gestor/salvar_atribuicao/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({
-                    professor_id: professorId,
-                    turmas: turmasSelecionadas,
-                    disciplina: disciplinaFinal,
-                    fora_de_campo: isForaDeCampo,
-                    em_substituicao: isEmSubstituicao
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.mensagem) {
-                    alert(data.mensagem);
-                    location.reload();
-                } else {
-                    alert(data.erro || 'Erro ao salvar atribuição.');
-                }
-            })
-            .catch(error => console.error('Erro ao salvar atribuição:', error));
-        }
-
-        
-        function abrirConfirmacao(atribuicaoId) {
-            // Exibe a janela de confirmação personalizada
-            const modal = document.getElementById('confirmacaoModal');
-            modal.style.display = 'block';
-            const confirmarButton = document.getElementById('confirmarExclusao');
-            confirmarButton.onclick = function () {
-                deletarAtribuicao(atribuicaoId);
-                modal.style.display = 'none'; // Fecha o modal após confirmar
-            };
-        }
-
-        function fecharConfirmacao() {
-            // Fecha a janela de confirmação personalizada
-            const modal = document.getElementById('confirmacaoModal');
-            modal.style.display = 'none';
-        }
-
-        let isLicenca = false;
-        let turmasAnteriores = [];
-        let atribuidasProfessor = [];
-
-        function toggleLicenca(button) {
-            isLicenca = !isLicenca;
-            button.style.backgroundColor = isLicenca ? "red" : "#007BFF";
-            button.style.color = isLicenca ? "white" : "black";
-
-            if (isLicenca) {
-                // Captura os dados das aulas atribuídas ao professor
-                atribuidasProfessor = Array.from(document.querySelectorAll('.aulas-atribuida')).map(row => ({
-                    escolaId: row.getAttribute('data-escola-id'),
-                    turma: row.getAttribute('data-turma'),
-                    disciplina: row.getAttribute('data-disciplina')
-                }));
-                console.log("Atribuições salvas:", atribuidasProfessor);
-            }
-        }
-
-        function salvarAtribuicao() {
-            const professorId = "{{ professor_selecionado.id }}";
-            const disciplina = document.getElementById('disciplina-selecionada').value;
-            const turmasSelecionadas = isLicenca ? [] : Array.from(document.querySelectorAll('button.selected')).map(btn => ({
-                turma: btn.getAttribute('data-turma'),
-                escolaId: btn.getAttribute('data-escola-id')
-            }));
-
-            if (isLicenca && turmasAnteriores.length > 0) {
-                // Reinserir as turmas ao desmarcar licença
-                turmasSelecionadas.push(...turmasAnteriores);
-                turmasAnteriores = [];
-            }
-
-            const disciplinaFinal = disciplina;
-
-            if (!professorId || (!isLicenca && turmasSelecionadas.length === 0)) {
-                alert("Certifique-se de selecionar pelo menos uma turma ou ativar licença.");
-                return;
-            }
-
-            fetch('/gestor/salvar_atribuicao/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({
-                    professor_id: professorId,
-                    turmas: turmasSelecionadas,
-                    disciplina: disciplinaFinal,
-                    licenca: isLicenca
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.mensagem) {
-                    alert(data.mensagem);
-                    location.reload();
-                } else {
-                    alert(data.erro || 'Erro ao salvar atribuição.');
-                }
-            })
-            .catch(error => console.error('Erro ao salvar atribuição:', error));
-        }
-
-
-       
-        return {
-            toggleLicenca: toggleLicenca,
-            atualizarDisciplina: atualizarDisciplina,
-            deletarAtribuicao: deletarAtribuicao,
-            abrirForaDeCampo: abrirForaDeCampo,
-            abrirAulaSubstituicao: abrirAulaSubstituicao,
-            toggleButton: toggleButton,
-            toggleForaDeCampo: toggleForaDeCampo,
-            toggleSubstituicao: toggleSubstituicao,
-            salvarAtribuicao: salvarAtribuicao,
-            abrirConfirmacao: abrirConfirmacao,
-            fecharConfirmacao: fecharConfirmacao
-        };
-    })();
     
-    // Atribuindo funções ao escopo global
-    window.toggleLicenca = gestorModule.toggleLicenca;
-    window.atualizarDisciplina = gestorModule.atualizarDisciplina;
-    window.deletarAtribuicao = gestorModule.deletarAtribuicao;
-    window.abrirForaDeCampo = gestorModule.abrirForaDeCampo;
-    window.abrirAulaSubstituicao = gestorModule.abrirAulaSubstituicao;
-    window.toggleButton = gestorModule.toggleButton;
-    window.toggleForaDeCampo = gestorModule.toggleForaDeCampo;
-    window.toggleSubstituicao = gestorModule.toggleSubstituicao;
-    window.salvarAtribuicao = gestorModule.salvarAtribuicao;
-    window.abrirConfirmacao = gestorModule.abrirConfirmacao;
-    window.fecharConfirmacao = gestorModule.fecharConfirmacao;
+    
+    
+    
+    
+    
+function salvarAtribuicao() {
+    const professorId = "{{ professor_selecionado.id }}";
+    const disciplina = document.getElementById('disciplina-selecionada').value;
+    const turmasSelecionadas = Array.from(document.querySelectorAll('button.selected')).map(btn => ({
+        turma: btn.getAttribute('data-turma'),
+        escolaId: btn.getAttribute('data-escola-id')
+    }));
+
+    const disciplinaFinal = disciplina;
+
+    if (!professorId || !disciplina || turmasSelecionadas.length === 0) {
+        alert("Certifique-se de selecionar a disciplina e pelo menos uma turma.");
+        return;
+    }
+
+    fetch('/gestor/salvar_atribuicao/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            professor_id: professorId,
+            turmas: turmasSelecionadas,
+            disciplina: disciplinaFinal,
+            fora_de_campo: isForaDeCampo,
+            em_substituicao: isEmSubstituicao
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.mensagem) {
+            alert(data.mensagem);
+            location.reload();
+        } else {
+            alert(data.erro || 'Erro ao salvar atribuição.');
+        }
+    })
+    .catch(error => console.error('Erro ao salvar atribuição:', error));
+}
+
+
+
+
+
+
+    
+    
+function abrirConfirmacao(atribuicaoId) {
+    // Exibe a janela de confirmação personalizada
+    const modal = document.getElementById('confirmacaoModal');
+    modal.style.display = 'block';
+    const confirmarButton = document.getElementById('confirmarExclusao');
+    confirmarButton.onclick = function () {
+        deletarAtribuicao(atribuicaoId);
+        modal.style.display = 'none'; // Fecha o modal após confirmar
+    };
+}
+
+function fecharConfirmacao() {
+    // Fecha a janela de confirmação personalizada
+    const modal = document.getElementById('confirmacaoModal');
+    modal.style.display = 'none';
+}
+
+    
+ <!--
+function deletarAtribuicao(atribuicaoId) {
+    fetch('/gestor/deletar_atribuicao/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'  // Inclui o CSRF Token para segurança
+        },
+        body: JSON.stringify({ atribuicao_id: atribuicaoId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.mensagem) {
+            alert(data.mensagem); // Mostra mensagem de sucesso
+            location.reload(); // Recarrega a página para atualizar
+        } else {
+            alert(data.erro || 'Erro ao excluir a atribuição.');
+        }
+    })
+    .catch(error => console.error('Erro ao excluir a atribuição:', error));
+}
+ -->     
+    
+    
+    
     
 </script>
+
+
+
+
+
 </body>
 </html>
+
+

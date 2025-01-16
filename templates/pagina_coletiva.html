@@ -5,6 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página Coletiva</title>
     <style>
+            button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            /* Adicionado para garantir que botões desabilitados não causem conflito com o cursor */
+            pointer-events: auto;
+
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button.disabled {
+            background-color: gray;
+            cursor: not-allowed;
+            /* Impedir cliques em botões desabilitados */
+            pointer-events: none;
+        }
+        button.selected {
+            background-color: green;
+            color: white;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -36,6 +60,9 @@
     </style>
 </head>
 <body>
+    <button onclick="window.location.href='/'" style="float: right; margin: 10px;">Voltar para Home</button>
+    <button onclick="window.location.href='/logout/'" style="float: right; margin: 10px;">Logout</button>
+  
     <h1>Página Coletiva</h1>
     <table>
         <thead>
