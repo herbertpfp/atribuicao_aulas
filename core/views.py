@@ -233,7 +233,7 @@ def pagina_gestor(request):
                 
                 
                 disciplinas_atribuidas = [
-                    atribuicao.disciplina.split(" (Fora de Campo)")[0].split(" (Substituição)")[0].strip()
+                    atribuicao.disciplina.split(" (Fora de Campo)")[0].split(" (Em Substituição)")[0].strip()
                     for atribuicao in atribuicoes_turma
 ]
                 
@@ -364,7 +364,7 @@ def salvar_atribuicao(request):
                 if fora_de_campo:
                     disciplina_final += " (Fora de Campo)"
                 if em_substituicao:
-                    disciplina_final += " (Substituição)"
+                    disciplina_final += " (Em Substituição)"
 
                 # Criação ou atualização de atribuição
                 Atribuicao.objects.update_or_create(
@@ -424,9 +424,9 @@ def pagina_coletiva(request):
                     atribuicao = Atribuicao.objects.filter(escola=escola, turma=turma.strip(), disciplina__icontains=disciplina).first()
                     if atribuicao:
                         fora_de_campo_texto = "(Fora de Campo)" if "fora de campo" in atribuicao.disciplina.lower() else ""
-                        substituicao_texto = "(Substituição)" if "substituição" in atribuicao.disciplina.lower() else ""
+                        em_substituicao_texto = "(Em Substituição)" if "substituição" in atribuicao.disciplina.lower() else ""
                         dados_turma["disciplinas"].append({
-                            "nome": f"{disciplina.replace('_', ' ').title()} {fora_de_campo_texto}".strip(),
+                            "nome": f"{disciplina.replace('_', ' ').title()} {fora_de_campo_texto}{em_substituicao_texto}".strip(),
                             "professor": atribuicao.professor.nome,
                             "pontuacao": atribuicao.professor.pontuacao_peb if atribuicao.professor.cargo == "PEB" else atribuicao.professor.pontuacao_paeb,
                             "cargo": atribuicao.professor.cargo,

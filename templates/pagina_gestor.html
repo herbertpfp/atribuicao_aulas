@@ -313,7 +313,7 @@
     <!-- Botões Adicionais -->
     <h3>Funcionalidades Adicionais</h3>
     <button id="fora-de-campo" onclick="toggleForaDeCampo(this)">Fora de Campo</button>
-    <button id="em-substituicao" onclick="toggleSubstituicao(this)">Aula em Substituição</button>
+    <button id="em-substituicao" onclick="toggleEmSubstituicao(this)">Aula em Substituição</button>
     <!-- Botão Licença -->
     <button id="licenca" onclick="toggleLicenca(this)">Licença</button>
 
@@ -408,7 +408,7 @@ document.addEventListener('DOMContentLoaded', () => {
         alert("Abrindo funcionalidade Fora de Campo...");
     }
 
-    function abrirAulaSubstituicao() {
+    function abrirEmSubstituicao() {
         alert("Abrindo funcionalidade Aula em Substituição...");
     }
 
@@ -430,7 +430,7 @@ function toggleForaDeCampo(button) {
     button.style.color = isForaDeCampo ? "white" : "black";
 }
 
-function toggleSubstituicao(button) {
+function toggleEmSubstituicao(button) {
     isEmSubstituicao = !isEmSubstituicao;
     button.style.backgroundColor = isEmSubstituicao ? "green" : "#007BFF";
     button.style.color = isEmSubstituicao ? "white" : "black";
