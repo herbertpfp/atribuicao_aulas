@@ -4,6 +4,78 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+    
+     <style>
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button.disabled {
+            background-color: gray;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        button.selected {
+            background-color: green;
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        .top-buttons {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+        #licenca {
+            background-color: #007BFF;
+            color: white !important;
+            transition: background-color 1s ease, color 0.9s ease;
+             position: relative; /* Container para o indicador de licença */
+        }
+        #licenca.active {
+            background-color: red !important;
+            color: white !important;
+        }
+        #licenca:focus,
+        #licenca:hover,
+        #licenca:active {
+            color: white !important;
+        }
+        .licenca-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: red;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            right: 5px;
+            transform: translateY(-50%);
+             pointer-events: none; /* Previne que o indicador receba cliques */
+        }
+         .licenca-indicator.hidden {
+            display: none;
+        }
+    </style>
+    
 </head>
 <body>
     <h2>Login</h2>
