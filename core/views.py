@@ -134,12 +134,6 @@ def pagina_professor(request):
 
 
 
-
-
-
-
-
-
 @login_required(login_url='/login/')
 def index(request):
     """
@@ -151,36 +145,94 @@ def index(request):
 
 
 
+	
+      
+from django.db.models import Q
+from .models import Professor, Escola, EscolhaProfessor, Atribuicao  # Importando os modelos
+
+# 🔹 Função para calcular a classificação
+def calcular_classificacao():
+    # Obter todos os professores PEB (incluindo "AMBOS")
+    professores_peb = list(
+        Professor.objects.filter(Q(cargo='PEB') | Q(cargo='AMBOS')).order_by('-pontuacao_peb', 'cpf')
+    )
+
+    # Obter todos os professores PAEB (incluindo "AMBOS")
+    professores_paeb = list(
+        Professor.objects.filter(Q(cargo='PAEB') | Q(cargo='AMBOS')).order_by('-pontuacao_paeb', 'cpf')
+    )
+
+    # Criar rankings específicos para PEB e PAEB
+    ranking_peb = {f"{professor.id}_PEB": idx + 1 for idx, professor in enumerate(professores_peb)}
+    ranking_paeb = {f"{professor.id}_PAEB": idx + 1 for idx, professor in enumerate(professores_paeb)}
+
+    # Criar lista de entidades para classificação geral
+    entidades_gerais = []
+
+    # Adicionar professores PEB à lista
+    for professor in professores_peb:
+        entidades_gerais.append({
+            'professor': professor,
+            'tipo': 'PEB',
+            'pontuacao': professor.pontuacao_peb if professor.pontuacao_peb is not None else -float('inf'),
+            'id_unico': f"{professor.id}_PEB"
+        })
+
+    # Adicionar professores PAEB à lista, incluindo "AMBOS" novamente
+    for professor in professores_paeb:
+        entidades_gerais.append({
+            'professor': professor,
+            'tipo': 'PAEB',
+            'pontuacao': professor.pontuacao_paeb if professor.pontuacao_paeb is not None else -float('inf'),
+            'id_unico': f"{professor.id}_PAEB"
+        })
+
+    # 🔹 Ordenação final da classificação geral
+    entidades_gerais = sorted(
+        entidades_gerais,
+        key=lambda entidade: (-entidade['pontuacao'], entidade['professor'].cpf)
+    )
+
+    # 🔹 Criar ranking geral com IDs únicos (separando PEB e PAEB)
+    ranking_geral = {entidade['id_unico']: idx + 1 for idx, entidade in enumerate(entidades_gerais)}
+
+    # Lista final de professores ordenados
+    professores_geral = [entidade['professor'] for entidade in entidades_gerais]
+
+    return ranking_peb, ranking_paeb, ranking_geral, professores_geral
 
 
 
-# View para a página exclusiva do gestor realizar atribuições.
-from django.shortcuts import render, redirect
+
+
+
+
+from django.shortcuts import render
 from django.http import HttpResponseForbidden
+from django.contrib.auth.decorators import login_required
+from .models import Professor, Escola, EscolhaProfessor, Atribuicao
+import re  # Importar regex para limpeza mais precisa
+
 
 @login_required
 def pagina_gestor(request):
     if not (request.user.groups.filter(name='Gestor').exists() or request.user.username == 'seu_usuario_dono'):
         return HttpResponseForbidden("Acesso negado. Você não tem permissão para acessar esta página.")
 
+    # Obter dados gerais
     professores = Professor.objects.all()
     escolas = Escola.objects.all()
-    professor_selecionado = None  # Inicializa a variável como None
+
+    # Obter rankings APENAS UMA VEZ
+    ranking_peb, ranking_paeb, ranking_geral, professores_geral = calcular_classificacao()
+
+    # Inicializar variáveis
+    professor_selecionado = None
     disciplina_selecionada = None
     escolhas_detalhadas = []
     aulas_atribuidas = []
     mensagem_erro = None
-
-    # Calcular os rankings
-    professores_peb = Professor.objects.filter(cargo__in=['PEB', 'AMBOS']).order_by('-pontuacao_peb', 'cpf')
-    professores_paeb = Professor.objects.filter(cargo__in=['PAEB', 'AMBOS']).order_by('-pontuacao_paeb', 'cpf')
-    ranking_especifico_peb = {professor.id: idx + 1 for idx, professor in enumerate(professores_peb)}
-    ranking_especifico_paeb = {professor.id: idx + 1 for idx, professor in enumerate(professores_paeb)}
-    professores_geral = sorted(
-        list(professores_peb) + list(professores_paeb),
-        key=lambda prof: (-prof.pontuacao_peb if prof.cargo in ['PEB', 'AMBOS'] else -prof.pontuacao_paeb, prof.cpf)
-    )
-    ranking_geral = {professor.id: idx + 1 for idx, professor in enumerate(professores_geral)}
+    cargo_selecionado = None  # Indicar se o professor está sendo tratado como PEB ou PAEB
 
     # Buscar professor por CPF ou classificação
     cpf = request.GET.get('cpf')
@@ -188,37 +240,52 @@ def pagina_gestor(request):
     tipo_classificacao = request.GET.get('tipo_classificacao')
     classificacao_geral = request.GET.get('classificacao_geral')
 
+    def buscar_professor_por_classificacao(classificacao, ranking):
+        """ Retorna o professor baseado na classificação informada. """
+        if classificacao:
+            classificacao = int(classificacao)
+            id_unico = next((id_ for id_, rank in ranking.items() if rank == classificacao), None)
+            if id_unico:
+                professor_id, tipo = id_unico.split('_')  # Separar ID real e tipo (PEB ou PAEB)
+                return Professor.objects.filter(id=professor_id).first(), tipo  # Retorna professor e tipo (PEB ou PAEB)
+        return None, None
+
     if cpf:
-        try:
-            professor_selecionado = Professor.objects.get(cpf=cpf)
-            disciplina_selecionada = professor_selecionado.disciplina_peb
-        except Professor.DoesNotExist:
+        professor_selecionado = Professor.objects.filter(cpf=cpf).first()
+        if professor_selecionado:
+            cargo_selecionado = professor_selecionado.cargo
+        else:
             mensagem_erro = f"Nenhum professor encontrado com o CPF {cpf}."
     elif classificacao_especifica:
-        classificacao_especifica = int(classificacao_especifica)
-        try:
-            professor_id = None
-            if tipo_classificacao == 'PEB':
-                professor_id = next((id_ for id_, rank in ranking_especifico_peb.items() if rank == classificacao_especifica), None)
-            elif tipo_classificacao == 'PAEB':
-                professor_id = next((id_ for id_, rank in ranking_especifico_paeb.items() if rank == classificacao_especifica), None)
-            professor_selecionado = Professor.objects.get(id=professor_id)
-            disciplina_selecionada = professor_selecionado.disciplina_peb
-        except (StopIteration, Professor.DoesNotExist):
+        if tipo_classificacao == 'PEB':
+            professor_selecionado, cargo_selecionado = buscar_professor_por_classificacao(classificacao_especifica, ranking_peb)
+        elif tipo_classificacao == 'PAEB':
+            professor_selecionado, cargo_selecionado = buscar_professor_por_classificacao(classificacao_especifica, ranking_paeb)
+        if not professor_selecionado:
             mensagem_erro = f"Nenhum professor encontrado para a classificação {classificacao_especifica} ({tipo_classificacao})."
     elif classificacao_geral:
-        classificacao_geral = int(classificacao_geral)
-        try:
-            professor_id = next((id_ for id_, rank in ranking_geral.items() if rank == classificacao_geral), None)
-            professor_selecionado = Professor.objects.get(id=professor_id)
-            disciplina_selecionada = professor_selecionado.disciplina_peb
-        except (StopIteration, Professor.DoesNotExist):
+        professor_selecionado, cargo_selecionado = buscar_professor_por_classificacao(classificacao_geral, ranking_geral)
+        if not professor_selecionado:
             mensagem_erro = f"Nenhum professor encontrado para a classificação geral {classificacao_geral}."
 
     # Verifica se o menu de disciplina foi alterado
     disciplina_alterada = request.GET.get('disciplina')
     if disciplina_alterada:
         disciplina_selecionada = disciplina_alterada
+    elif professor_selecionado:
+        # Ajuste: Seleciona a disciplina correta com base no cargo do professor
+        if cargo_selecionado == "PEB":
+            disciplina_selecionada = professor_selecionado.disciplina_peb
+        elif cargo_selecionado == "PAEB":
+            disciplina_selecionada = professor_selecionado.disciplina_paeb
+        elif cargo_selecionado == "AMBOS":
+            # Se estiver na classificação específica, segue o tipo_classificacao escolhido
+            if tipo_classificacao == "PEB":
+                disciplina_selecionada = professor_selecionado.disciplina_peb
+            elif tipo_classificacao == "PAEB":
+                disciplina_selecionada = professor_selecionado.disciplina_paeb
+            else:
+                disciplina_selecionada = professor_selecionado.disciplina_peb  # Padrão para PEB
 
     # Carregar as escolhas do professor
     if professor_selecionado:
@@ -229,16 +296,10 @@ def pagina_gestor(request):
 
             for turma in turmas_lista:
                 atribuicoes_turma = Atribuicao.objects.filter(escola=escolha.escola, turma=turma.strip())
-                            
-                
-                
                 disciplinas_atribuidas = [
                     atribuicao.disciplina.split(" (Fora de Campo)")[0].split(" (Em Substituição)")[0].strip()
                     for atribuicao in atribuicoes_turma
-]
-                
-                   
-
+                ]
                 status_disciplinas = [
                     {
                         "disciplina": disciplina_selecionada,
@@ -260,6 +321,13 @@ def pagina_gestor(request):
 
         aulas_atribuidas = Atribuicao.objects.filter(professor=professor_selecionado).select_related('escola')
 
+    # Informações sobre Licença do professor        
+    if professor_selecionado:
+        memoria_licenca_key = f"licenca_professor_{professor_selecionado.id}"
+        em_licenca = bool(request.session.get(memoria_licenca_key, []))
+    else:
+        em_licenca = False  # Define um valor padrão para evitar erro
+
     return render(request, 'pagina_gestor.html', {
         'professores': professores,
         'escolas': escolas,
@@ -267,11 +335,15 @@ def pagina_gestor(request):
         'disciplina_selecionada': disciplina_selecionada,
         'escolhas_detalhadas': escolhas_detalhadas,
         'aulas_atribuidas': aulas_atribuidas,
-        'ranking_peb': ranking_especifico_peb,
-        'ranking_paeb': ranking_especifico_paeb,
+        'ranking_peb': ranking_peb,
+        'ranking_paeb': ranking_paeb,
         'ranking_geral': ranking_geral,
+        'professores_geral': professores_geral,
         'mensagem_erro': mensagem_erro,
+        'em_licenca': em_licenca,  # <-- Enviando variável para o template
     })
+
+
 
 
 
@@ -301,30 +373,59 @@ def salvar_atribuicao(request):
             professor_id = data.get('professor_id')
             turmas = data.get('turmas', [])
             disciplina = data.get('disciplina')  # Lê a disciplina enviada pelo frontend
+            
+            
+            disciplina_original = data.get('disciplina')  # Criado pra não dar chabu 
+            
+            
             fora_de_campo = data.get('fora_de_campo', False)
             em_substituicao = data.get('em_substituicao', False)
             licenca = data.get('licenca', False)
-            
-            
-            
 
             if not professor_id or (not turmas and not licenca) or (not disciplina and not licenca):
-                print("Erro: Dados incompletos")  # Log para depuração
                 return JsonResponse({'erro': 'Dados incompletos. Verifique os campos preenchidos.'}, status=400)
 
             professor = Professor.objects.get(id=professor_id)
             gestor = request.user.username  # Nome do gestor logado
 
-            # Verificar se é um caso de licença
+            # Verificar se o professor já tem uma licença ativa
             memoria_licenca_key = f"licenca_professor_{professor_id}"
             memoria_licenca = request.session.get(memoria_licenca_key, [])
 
+            # Gerenciar ativação ou desativação da licença
             if licenca:
                 if memoria_licenca:
-                    # Desativa licença e restaura atribuições
-                    print("Desativando licença e restaurando atribuições...")
+                    # Desativar licença e restaurar atribuições
+                    
+                    
+                    
+                    
                     for atrib in memoria_licenca:
                         escola = Escola.objects.get(id=atrib['escolaId'])
+
+                        # Busca todas as atribuições dessa turma na mesma escola e disciplina, mas de outro professor
+                      
+                        atribuicoes_existentes = Atribuicao.objects.filter(
+                            escola=escola, turma=atrib['turma']
+                            
+            # 🔹 Ajuste para considerar apenas as 4 primeiras letras da disciplina na comparação
+            
+                        ).exclude(professor=professor).filter(
+                            disciplina__startswith=atrib['disciplina'][:4]  # Compara os 4 primeiros caracteres
+                        )            
+            
+            
+            
+            
+            
+            
+     
+
+                        # Remove as atribuições feitas a outros professores durante a licença
+                        if atribuicoes_existentes.exists():
+                            atribuicoes_existentes.delete()
+
+                        # Restaurar atribuição original da Maria
                         Atribuicao.objects.update_or_create(
                             professor=professor,
                             escola=escola,
@@ -334,11 +435,14 @@ def salvar_atribuicao(request):
                                 'gestor_responsavel': gestor,
                             }
                         )
-                    del request.session[memoria_licenca_key]
+
+                        
+                        
+                        
+                    del request.session[memoria_licenca_key]  # Remover a licença da memória
                     return JsonResponse({'mensagem': 'Licença desativada. Atribuições restauradas.'})
                 else:
-                    # Ativa licença e remove todas as atribuições
-                    print("Ativando licença e removendo atribuições...")
+                    # Ativar licença e remover todas as atribuições
                     atribuicoes = Atribuicao.objects.filter(professor=professor)
                     memoria_licenca = [
                         {
@@ -352,15 +456,21 @@ def salvar_atribuicao(request):
                     atribuicoes.delete()
                     return JsonResponse({'mensagem': 'Licença ativada. Todas as atribuições foram removidas.'})
 
+            # Se o professor está de licença, impedir atribuições
+            if memoria_licenca:
+                return JsonResponse({
+                    'erro': 'Professor em licença não pode atribuir novas aulas. '
+                            'Por favor, clique no botão Licença para desbloquear essa opção.'
+                }, status=403)
 
-
-
- 	# Fluxo padrão para atribuições
+            # Fluxo padrão para atribuições
             for turma_data in turmas:
                 escola = Escola.objects.get(id=turma_data['escolaId'])
 
                 # Ajusta a disciplina com os textos adicionais
                 disciplina_final = disciplina
+                disciplina_limpa = disciplina  # <-- Guarda a versão original da disciplina
+                
                 if fora_de_campo:
                     disciplina_final += " (Fora de Campo)"
                 if em_substituicao:
@@ -373,6 +483,7 @@ def salvar_atribuicao(request):
                     turma=turma_data['turma'],
                     defaults={
                         'disciplina': disciplina_final,
+#                        'disciplina_original': disciplina_limpa,  # <-- Salva a versão limpa no banco de dados
                         'gestor_responsavel': gestor
                     }
                 )
@@ -388,17 +499,11 @@ def salvar_atribuicao(request):
 
 
 
-
-
-    
-
-
-
-
-
-
 @login_required
 def pagina_coletiva(request):
+    # 🔹 Obter rankings para exibição
+    ranking_peb, ranking_paeb, ranking_geral, professores_geral = calcular_classificacao()
+
     escolas = Escola.objects.all().prefetch_related('atribuicao_set')
     dados_coletivos = []
 
@@ -411,7 +516,6 @@ def pagina_coletiva(request):
         ]
 
         dados_escola = {"nome": escola.nome, "endereco": escola.endereco, "periodos": []}
-
         disciplinas = ["matematica", "geografia", "ciencias", "historia", "portugues", "arte", "ingles", "educacao_fisica"]
 
         for periodo in periodos:
@@ -425,10 +529,19 @@ def pagina_coletiva(request):
                     if atribuicao:
                         fora_de_campo_texto = "(Fora de Campo)" if "fora de campo" in atribuicao.disciplina.lower() else ""
                         em_substituicao_texto = "(Em Substituição)" if "substituição" in atribuicao.disciplina.lower() else ""
+
+                        # 🔹 Ajuste: Exibir ambas as pontuações para professores "AMBOS"
+                        if atribuicao.professor.cargo == "AMBOS":
+                            pontuacao = f"{atribuicao.professor.pontuacao_peb}, {atribuicao.professor.pontuacao_paeb}"
+                        elif atribuicao.professor.cargo == "PEB":
+                            pontuacao = atribuicao.professor.pontuacao_peb
+                        else:
+                            pontuacao = atribuicao.professor.pontuacao_paeb
+
                         dados_turma["disciplinas"].append({
                             "nome": f"{disciplina.replace('_', ' ').title()} {fora_de_campo_texto}{em_substituicao_texto}".strip(),
                             "professor": atribuicao.professor.nome,
-                            "pontuacao": atribuicao.professor.pontuacao_peb if atribuicao.professor.cargo == "PEB" else atribuicao.professor.pontuacao_paeb,
+                            "pontuacao": pontuacao,  # Agora exibe corretamente as duas pontuações se for "AMBOS"
                             "cargo": atribuicao.professor.cargo,
                             "gestor": atribuicao.gestor_responsavel if hasattr(atribuicao, 'gestor_responsavel') else "N/A"
                         })
@@ -444,20 +557,13 @@ def pagina_coletiva(request):
 
         dados_coletivos.append(dados_escola)
 
-    return render(request, 'pagina_coletiva.html', {"dados_coletivos": dados_coletivos})
-
-
-
-
-
-
-
-
-
-
-
-
-
+    return render(request, 'pagina_coletiva.html', {
+        "dados_coletivos": dados_coletivos,
+        "ranking_peb": ranking_peb,
+        "ranking_paeb": ranking_paeb,
+        "ranking_geral": ranking_geral,
+        "professores_geral": professores_geral
+    })
 
 
 
@@ -582,79 +688,6 @@ def remover_escolha(request):
 
 
 
-	
-      
-from django.db.models import Q
-from .models import Professor  # Certifique-se de importar seu modelo corretamente
-
-def calcular_classificacao():
-    # Obter todos os professores PEB (incluindo aqueles com cargo 'AMBOS')
-    professores_peb = list(
-        Professor.objects.filter(Q(cargo='PEB') | Q(cargo='AMBOS')).order_by('-pontuacao_peb', 'cpf')
-    )
-
-    # Obter todos os professores PAEB (incluindo aqueles com cargo 'AMBOS')
-    professores_paeb = list(
-        Professor.objects.filter(Q(cargo='PAEB') | Q(cargo='AMBOS')).order_by('-pontuacao_paeb', 'cpf')
-    )
-
-    # Obter todos os professores (independentemente de cargo ou pontuação)
-    professores_todos = list(Professor.objects.all())
-
-    # Criar rankings específicos para PEB e PAEB
-    ranking_peb = {professor.id: idx + 1 for idx, professor in enumerate(professores_peb)}
-    ranking_paeb = {professor.id: idx + 1 for idx, professor in enumerate(professores_paeb)}
-
-    # Criar entidades virtuais para classificação geral
-    entidades_gerais = []
-
-    # Adicionar professores PEB à classificação geral
-    for professor in professores_peb:
-        entidades_gerais.append({
-            'professor': professor,
-            'tipo': 'PEB',
-            'pontuacao': professor.pontuacao_peb if professor.pontuacao_peb is not None else -float('inf'),
-        })
-
-    # Adicionar professores PAEB à classificação geral, mesmo que já tenham sido adicionados como PEB
-    for professor in professores_paeb:
-        entidades_gerais.append({
-            'professor': professor,
-            'tipo': 'PAEB',
-            'pontuacao': professor.pontuacao_paeb if professor.pontuacao_paeb is not None else -float('inf'),
-        })
-
-    # Adicionar professores que não estão em PEB nem em PAEB
-    for professor in professores_todos:
-        if professor not in [entidade['professor'] for entidade in entidades_gerais]:
-            entidades_gerais.append({
-                'professor': professor,
-                'tipo': None,
-                'pontuacao': -float('inf'),
-            })
-
-    # Ordenar as entidades virtuais para gerar a classificação geral
-    entidades_gerais = sorted(
-        entidades_gerais,
-        key=lambda entidade: (-entidade['pontuacao'], entidade['professor'].cpf)
-    )
-
-    # Corrigir duplicações na lista geral (mesmo professor em PEB e PAEB)
-    vistos = set()
-    entidades_gerais_unicas = []
-    for entidade in entidades_gerais:
-        if entidade['professor'].id not in vistos:
-            entidades_gerais_unicas.append(entidade)
-            vistos.add(entidade['professor'].id)
-
-    # Extrair os professores ordenados pela classificação geral
-    professores_geral = [entidade['professor'] for entidade in entidades_gerais_unicas]
-
-    # Criar o ranking geral
-    ranking_geral = {professor.id: idx + 1 for idx, professor in enumerate(professores_geral)}
-
-    return ranking_peb, ranking_paeb, ranking_geral
-
 
 
 
@@ -688,4 +721,3 @@ def deletar_atribuicao(request):
 
 
 # Fim do arquivo views.py
-

@@ -91,7 +91,7 @@
     <button type="submit">Buscar</button>
 </form>
 
-<form method="GET" action="" id="form-especifica">
+<form method="GET" action="">
     <label for="classificacao_especifica">Buscar por Classificação Específica:</label>
     <input type="number" id="classificacao_especifica" name="classificacao_especifica" min="1" max="5000" placeholder="Digite a posição">
     
@@ -101,13 +101,8 @@
     <input type="radio" id="paeb" name="tipo_classificacao" value="PAEB">
     <label for="paeb">PAEB</label>
 
-    <p id="mensagem-checkbox" style="color: red; font-weight: bold; display: none;">
-        Selecione a categoria específica PEB ou PAEB antes de buscar.
-    </p>
-
     <button type="submit">Buscar</button>
 </form>
-
 
 <form method="GET" action="">
     <label for="classificacao_geral">Buscar por Classificação Geral:</label>
@@ -142,7 +137,30 @@
             }
         }
 
-        // Função para limpar campos ao interagir com um deles
+        // Armazena valores ao digitar
+        inputCpf.addEventListener('input', function () {
+            localStorage.setItem('cpf', inputCpf.value);
+        });
+        inputEspecifica.addEventListener('input', function () {
+            localStorage.setItem('classificacao_especifica', inputEspecifica.value);
+        });
+        inputGeral.addEventListener('input', function () {
+            localStorage.setItem('classificacao_geral', inputGeral.value);
+        });
+
+        // Armazena opção de classificação (PEB/PAEB)
+        radioPeb.addEventListener('change', function () {
+            if (radioPeb.checked) {
+                localStorage.setItem('tipo_classificacao', 'PEB');
+            }
+        });
+        radioPaeb.addEventListener('change', function () {
+            if (radioPaeb.checked) {
+                localStorage.setItem('tipo_classificacao', 'PAEB');
+            }
+        });
+
+        // Limpa os outros campos ao focar em um deles
         function limparCampos(exceto) {
             if (exceto !== 'cpf') {
                 inputCpf.value = '';
@@ -163,143 +181,34 @@
             }
         }
 
-        // Eventos de foco (quando o usuário clica no campo)
+        // Se clicar no CPF, limpa tudo exceto o CPF
         inputCpf.addEventListener('focus', function () {
             limparCampos('cpf');
         });
+
+        // Se clicar na classificação específica, limpa os demais campos (exceto checkboxes)
         inputEspecifica.addEventListener('focus', function () {
             limparCampos('especifica');
         });
+
+        // Se clicar na classificação geral, limpa os demais campos
         inputGeral.addEventListener('focus', function () {
             limparCampos('geral');
         });
 
-        // Eventos de mudança de valor (quando o usuário altera o campo)
-        inputCpf.addEventListener('change', function () {
-            limparCampos('cpf');
-            localStorage.setItem('cpf', inputCpf.value);
-        });
-        inputEspecifica.addEventListener('change', function () {
-            limparCampos('especifica');
-            localStorage.setItem('classificacao_especifica', inputEspecifica.value);
-        });
-        inputGeral.addEventListener('change', function () {
-            limparCampos('geral');
-            localStorage.setItem('classificacao_geral', inputGeral.value);
-        });
-
-        // Eventos para limpar ao mudar o checkbox de PEB/PAEB
+        // Se alterar os checkboxes PEB/PAEB, limpa os demais campos
         radioPeb.addEventListener('change', function () {
             limparCampos('tipo');
-            if (radioPeb.checked) {
-                localStorage.setItem('tipo_classificacao', 'PEB');
-            }
         });
         radioPaeb.addEventListener('change', function () {
             limparCampos('tipo');
-            if (radioPaeb.checked) {
-                localStorage.setItem('tipo_classificacao', 'PAEB');
-            }
-        });
-    });
-    
-  <!-- Rotina para os checkboxes PEB e PAEB cllicados -->  
-  
-     document.addEventListener('DOMContentLoaded', function () {
-        const formEspecifica = document.getElementById('form-especifica');
-        const inputEspecifica = document.getElementById('classificacao_especifica');
-        const radioPeb = document.getElementById('peb');
-        const radioPaeb = document.getElementById('paeb');
-        const mensagemCheckbox = document.getElementById('mensagem-checkbox');
-
-        formEspecifica.addEventListener('submit', function (event) {
-            // Se um número for digitado mas nenhum checkbox estiver marcado, impede envio do formulário
-            if (inputEspecifica.value.trim() !== "" && !radioPeb.checked && !radioPaeb.checked) {
-                event.preventDefault(); // Impede o envio do formulário
-                mensagemCheckbox.style.display = 'block'; // Exibe a mensagem de erro
-            } else {
-                mensagemCheckbox.style.display = 'none'; // Esconde a mensagem se estiver tudo certo
-            }
-        });
-
-        // Se o usuário selecionar um checkbox, esconde a mensagem de erro
-        radioPeb.addEventListener('change', function () {
-            mensagemCheckbox.style.display = 'none';
-        });
-
-        radioPaeb.addEventListener('change', function () {
-            mensagemCheckbox.style.display = 'none';
-        });
-    });
-    
- <!-- Fim Formulários de busca -->   
-    
-    
-    
-    
-</script>
-
-
-
-
-
-
-
-
-
-
-<!-- Exibir mensagem caso o professor não seja encontrado -->
-{% if not professor_selecionado %}
-    <p style="color: red; font-weight: bold; font-size: 20px;">Nenhum professor encontrado com os critérios informados.</p>
-{% endif %}
-
-
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const forms = document.querySelectorAll("form");
-
-        forms.forEach(form => {
-            form.addEventListener("submit", function (event) {
-                const inputCpf = document.getElementById("cpf");
-                const inputEspecifica = document.getElementById("classificacao_especifica");
-                const inputGeral = document.getElementById("classificacao_geral");
-                const radioPeb = document.getElementById("peb");
-                const radioPaeb = document.getElementById("paeb");
-
-                let valid = false;
-
-                if (inputCpf && inputCpf.value.trim() !== "") {
-                    valid = true;
-                }
-                if (inputEspecifica && inputEspecifica.value.trim() !== "") {
-                    if (radioPeb.checked || radioPaeb.checked) {
-                        valid = true;
-                    } else {
-                        event.preventDefault();
-                        alert("Selecione PEB ou PAEB antes de buscar!");
-                        return;
-                    }
-                }
-                if (inputGeral && inputGeral.value.trim() !== "") {
-                    valid = true;
-                }
-
-                if (!valid) {
-                    event.preventDefault();
-                    alert("Preencha ao menos um campo antes de buscar.");
-                }
-            });
         });
     });
 </script>
 
 
-<!-- Fim rotina não encontra professor -->
 
-
-
-
-
+<!-- Fim Formulários de busca -->
 
 
 <!-- Informações do professor selecionado -->
@@ -328,22 +237,6 @@
                 <th>CPF</th>
                 <td><input type="text" name="cpf" value="{{ professor_selecionado.cpf }}" readonly></td>
             </tr>
-
-
-
-<tr>
-    <th>Pontuação PEB</th>
-    <td><input type="text" name="pontuacao_peb" value="{{ professor_selecionado.pontuacao_peb }}"></td>
-</tr>
-<tr>
-    <th>Pontuação PAEB</th>
-    <td><input type="text" name="pontuacao_paeb" value="{{ professor_selecionado.pontuacao_paeb }}"></td>
-</tr>
-
-            
-            
-            
-            
             <tr>
                 <th>Cargo</th>
                 <td>
@@ -536,7 +429,9 @@
 {% endif %}
 
 <script>
-
+//    function toggleButton(button) {
+//        button.classList.toggle("selected");
+//    }
 
 //BOTÃO LICENÇA
 let isLicenca = false;
@@ -608,7 +503,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-<!-- Fim da rotina ouvido listener -->
+
+
+
+
+
+
+
 
     function deletarAtribuicao(atribuicaoId) {
         if (confirm("Tem certeza de que deseja excluir esta atribuição?")) {
