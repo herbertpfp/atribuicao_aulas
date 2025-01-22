@@ -53,13 +53,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'atribuicao_aulas.wsgi.application'
 
-# Banco de Dados
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'atribuicao_postgresql',
+        'USER': 'postgres',
+        'PASSWORD': 'Matematica1*',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
+
 
 # Configuração de Senhas
 #AUTH_PASSWORD_VALIDATORS = [
